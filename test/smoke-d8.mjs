@@ -1,9 +1,39 @@
 // 冒烟：模拟 D8 家长中心 + P9 打卡日历页面链路
 // （档案增改与上限、prefs 偏好写回、导出/导入/删除、护眼时长统计、
-//   手动补签与连续打卡、月历单元格算法、最近 7 天汇总）
+//   手动补签与连续打卡、月历单元格算法、最近 7 天汇总、repo.version 响应式链路）
+import { reactive, computed } from 'vue';
 import { Repository, MemoryStorage } from '../src/core/repository.js';
 import { AchievementService } from '../src/core/achievement.js';
 import { StatsService } from '../src/core/stats.js';
+
+// ============ repo.version 响应式缓存失效（store.js 同款模式） ============
+// 页面层把 repo 包成 reactive；computed 里 touch repo.version 后，
+// 任意写入（如家长中心改 prefs）都应驱动 computed 重算并读到新数据
+const vrepo = reactive(new Repository(new MemoryStorage()));
+vrepo.save('profiles', { _id: 'pv1', nickname: '甲', grade: 1, semester: '上', prefs: { questionCount: 30, difficultyMode: 'mixed', dailyLimitMin: 30 }, createdAt: 1 });
+let profLoads = 0;
+const vprofs = computed(() => {
+  void vrepo.version;
+  profLoads += 1;
+  return vrepo.load('profiles');
+});
+if (vprofs.value.length !== 1 || profLoads !== 1) {
+  console.error('FAIL version 链路初始化错误');
+  process.exit(1);
+}
+// 写入推进 version → computed 失效重算（未失效时 vprofs 命中缓存，profLoads 不增加）
+vrepo.save('profiles', { _id: 'pv1', nickname: '甲改', grade: 1, semester: '上', prefs: { questionCount: 30, difficultyMode: 'mixed', dailyLimitMin: 40 }, createdAt: 1 });
+if (vprofs.value[0].nickname !== '甲改' || vprofs.value[0].prefs.dailyLimitMin !== 40 || profLoads !== 2) {
+  console.error('FAIL repo.version 未驱动 computed 重算（护眼上限不刷新的同类 bug）', vprofs.value, profLoads);
+  process.exit(1);
+}
+const vBefore = vrepo.version;
+vrepo.clear();
+if (vrepo.version !== vBefore + 1) {
+  console.error('FAIL clear 未推进版本号');
+  process.exit(1);
+}
+console.log('repo.version 响应式链路 OK：写入推进版本号 → computed 失效重算 → prefs 改动即时可见');
 
 const repo = new Repository(new MemoryStorage());
 const achievement = new AchievementService(repo);
@@ -223,7 +253,16 @@ for (let i = 6; i >= 0; i--) {
     const dur = records.reduce((s, r) => s + (r.durationSec ?? 0), 0);
     summary = { totalQ, accuracy: Math.round(acc * 100), durationSec: dur, rating: Math.round(acc * 5) };
   }
-  days.push({ key, summary, checked: new Set(calAch.getOrCreate(cp).checkinDates).has(key) });
+  const checked = new Set(calAch.getOrCreate(cp).checkinDates).has(key);
+  const isToday = key === '2026-11-02';
+  days.push({
+    key,
+    summary,
+    checked,
+    isToday,
+    // Calendar.recentDays 同款：补签仅开放给过去、未练习、未打卡的日期
+    canMend: !summary && !checked && !isToday,
+  });
 }
 days.reverse(); // Calendar.recentDays 同款：最近在前
 const day1101 = days[1]; // 11-01
@@ -234,6 +273,11 @@ if (!day1101.summary || day1101.summary.totalQ !== 30 || day1101.summary.accurac
 const day1102 = days[0]; // 11-02（今天，无记录）
 if (day1102.summary !== null) {
   console.error('FAIL 无记录日不应有汇总');
+  process.exit(1);
+}
+// 补签开放条件：有练习/已打卡/今天均不可补签；过去无记录未打卡日可补签
+if (day1101.canMend !== false || day1102.canMend !== false || days[3].canMend !== true) {
+  console.error('FAIL canMend 补签开放条件错误', day1101, day1102, days[3]);
   process.exit(1);
 }
 console.log('最近 7 天汇总 OK：有练习日（30 题 / 93% / 5 星），无练习日为空');

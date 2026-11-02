@@ -21,7 +21,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 
 // 按需注册：只打包折线/柱状图（报告页仅用两种图，减小 chunk）
 echarts.use([LineChart, BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
-import { store, repo, semShort, termOf } from '../store.js';
+import { store, repo, semShort, termOf, visibleKps } from '../store.js';
 import { StatsService } from '../core/stats.js';
 import { WrongBook } from '../core/wrongbook.js';
 import { AchievementService } from '../core/achievement.js';
@@ -121,7 +121,7 @@ const kpList = computed(() => {
     return [];
   }
   const term = termOf(profile);
-  return listKnowledgePoints(term).map((kp) => {
+  return visibleKps(listKnowledgePoints(term)).map((kp) => {
     const m = stats.getMastery(pid, kp.id);
     return {
       ...kp,

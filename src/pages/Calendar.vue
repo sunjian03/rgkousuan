@@ -26,7 +26,10 @@ const stats = new StatsService(repo);
 /** 档案可能在 App 挂载后才初始化，用 computed 保证切换/初始化后页面数据跟着更新 */
 const pid = computed(() => store.currentProfileId);
 const profile = computed(() => store.currentProfile);
-const profiles = computed(() => repo.load('profiles'));
+const profiles = computed(() => {
+  void repo.version; // 数据版本依赖
+  return repo.load('profiles');
+});
 
 const pad = (n) => String(n).padStart(2, '0');
 const keyOf = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
@@ -35,7 +38,10 @@ const now = new Date();
 const todayKey = keyOf(now.getFullYear(), now.getMonth() + 1, now.getDate());
 
 /** 当前档案打卡记录（checkinDates，3.2.1 achievements） */
-const ach = computed(() => achievement.getOrCreate(pid.value));
+const ach = computed(() => {
+  void repo.version; // 数据版本依赖：补签/练习结算写成就后月历与最近打卡即时刷新
+  return achievement.getOrCreate(pid.value);
+});
 const checkedSet = computed(() => new Set(ach.value.checkinDates));
 
 // ---- 连续打卡 ----
@@ -154,10 +160,11 @@ const recentDays = computed(() => {
       };
     }
     const checked = checkedSet.value.has(key);
+    const isToday = key === todayKey;
     days.push({
       key,
       label: `${d.getMonth() + 1} 月 ${d.getDate()} 日 · 周${WEEK[d.getDay()]}`,
-      isToday: key === todayKey,
+      isToday,
       summary,
       checked,
       // 补签开放：最近 7 天内、过去日期、未练习、未打卡

@@ -103,4 +103,20 @@ for (const count of [30, 60]) {
   }
 }
 console.log('打印页出题链路 OK：二上 30/60 题足量、知识点轮转均匀');
+
+// ============ M1 semester 参数契约（防 Setup 把档案短值 semShort 传给 generate 的回归） ============
+// 知识点配置 semester 为 6 学期全称（3.2.1(5)），档案 semester 为「上/下」（3.2.1(1)），
+// 两者格式不同：generate 的 semester 必须传全称，短值按设计被拒绝
+const kps3 = listKnowledgePoints('三下');
+const badTerm = generate({ kpId: kps3[0].id, semester: '下', count: 10, difficultyMode: 'mixed' });
+if (badTerm.ok !== false) {
+  console.error('FAIL 短值学期未被拒绝（M1 semester 参数应为学期全称）');
+  process.exit(1);
+}
+const goodTerm = generate({ kpId: kps3[0].id, semester: '三下', count: 10, difficultyMode: 'mixed' });
+if (!Array.isArray(goodTerm) || goodTerm.length !== 10) {
+  console.error('FAIL 全称学期出题失败');
+  process.exit(1);
+}
+console.log('M1 semester 契约 OK：全称学期（如 三下）出题成功、短值（下）按设计拒绝');
 console.log('D9 冒烟全部通过');

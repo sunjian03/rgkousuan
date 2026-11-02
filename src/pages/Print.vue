@@ -13,9 +13,12 @@
  * - 原型「页脚显示网址二维码」需二维码生成库且设计报告未要求，不还原；
  * - 格式选项原型只画了「带竖式空格 / 紧凑两列」两项（均未选中=常规三列），
  *   实现为三态互斥：常规三列 / 带竖式空格（两列加大行距）/ 紧凑两列。
+ * - 产品决策（2026-11-02 用户确认）：单位换算类知识点（op='unit'）不出现在
+ *   打印题纸，页面层过滤 listKnowledgePoints 结果；core 配置与算法保留
+ *   （说明同 Setup.vue 文件头）。
  */
 import { computed, ref, watchEffect } from 'vue';
-import { store, semShort } from '../store.js';
+import { store, semShort, visibleKps } from '../store.js';
 import { listKnowledgePoints, generate } from '../core/generator.js';
 import { generatePdf, renderPageToCanvas } from '../core/printer.js';
 
@@ -33,7 +36,7 @@ function makePaper(count) {
   }
   const gradeName = GRADE[profile.value.grade - 1] ?? '一';
   const term = gradeName + semShort(profile.value.semester);
-  const kps = listKnowledgePoints(term);
+  const kps = visibleKps(listKnowledgePoints(term)); // 单位/面积周长题不出现在题纸（产品决策，见文件头）
   if (kps.length === 0) {
     errMsg.value = `「${term}」暂无可打印的知识点`;
     paper.value = [];
@@ -68,14 +71,8 @@ function makePaper(count) {
   paper.value = merged.slice(0, count);
   kpNames.value = kps.map((k) => k.name);
   errMsg.value = '';
+  pageIndex.value = 1; // 重新出题回到第一页
 }
-
-// 档案就绪后首次出题（App 的 ensureProfile 在子组件挂载后才执行）
-watchEffect(() => {
-  if (profile.value && paper.value.length === 0 && !errMsg.value) {
-    makePaper(amount.value);
-  }
-});
 
 // ---- 预览与打印选项 ----
 const view = ref('q'); // q 题目页 | a 答案页
@@ -87,6 +84,26 @@ const FONT_META = { 0: '宽松版', 1: '单面', 2: '紧凑版' };
 const amount = ref(30); // 30 题/页 | 60 题/两页
 const formatOpt = ref('normal'); // normal | spaced | compact
 const withAnswer = ref(true);
+
+// ---- 预览翻页（60 题两页；与 PDF 分页规则一致：每页 30 题，题号页内从 1 起） ----
+const pageIndex = ref(1);
+const pageTotal = computed(() => (paper.value.length > 30 ? 2 : 1));
+const pageQuestions = computed(() => paper.value.slice((pageIndex.value - 1) * 30, pageIndex.value * 30));
+function flipPage(delta) {
+  const next = pageIndex.value + delta;
+  if (next >= 1 && next <= pageTotal.value) {
+    pageIndex.value = next;
+  }
+}
+
+// 档案就绪后首次出题（App 的 ensureProfile 在子组件挂载后才执行）
+// 注意：必须放在 amount 等 const 声明之后——watchEffect 注册时立即执行，
+// 若引用其下方的 const 会触发暂时性死区（TDZ）ReferenceError
+watchEffect(() => {
+  if (profile.value && paper.value.length === 0 && !errMsg.value) {
+    makePaper(amount.value);
+  }
+});
 
 const title = computed(() => {
   const g = GRADE[profile.value?.grade - 1] ?? '一';
@@ -124,6 +141,7 @@ function pickAmount(v) {
     return;
   }
   amount.value = v;
+  pageIndex.value = 1; // 切换题量回到第一页
   makePaper(v);
 }
 function pickFormat(v) {
@@ -162,11 +180,11 @@ function saveImage() {
     kind: view.value,
     title: view.value === 'a' ? '参考答案（家长核对用）' : title.value,
     sub: subText.value,
-    questions: paper.value.slice(0, 30), // 图片只存第一页
+    questions: pageQuestions.value, // 图片保存当前预览页
     cols: formatOpt.value === 'normal' ? 3 : 2,
     spaced: formatOpt.value === 'spaced',
-    pageIndex: 1,
-    pageCount: paper.value.length > 30 ? 2 : 1,
+    pageIndex: pageIndex.value,
+    pageCount: pageTotal.value,
   };
   const canvas = renderPageToCanvas(page);
   const a = document.createElement('a');
@@ -237,18 +255,32 @@ function toast(msg) {
         <div v-if="paper.length === 0" class="flex flex-1 items-center justify-center py-10 text-[11px] text-[#A99079]">
           {{ errMsg || '暂无可打印的题目' }}
         </div>
-        <div v-else class="qt mt-1 flex-1 text-[#3A2C24]" :style="{ '--qs': fontSize + 'px' }">
+        <div v-else class="qt mt-1 min-h-0 flex-1 overflow-y-auto text-[#3A2C24]" :style="{ '--qs': fontSize + 'px' }">
           <div class="grid" :class="gridClass">
-            <div v-for="(q, i) in paper.slice(0, 30)" :key="i" class="flex items-start gap-0.5 whitespace-nowrap">
+            <div v-for="(q, i) in pageQuestions" :key="i" class="flex min-w-0 items-start gap-0.5">
               <span class="w-[1.4em] shrink-0 text-right text-[0.85em] text-[#B6A190]">{{ i + 1 }}.</span>
-              <span v-if="view === 'q'">{{ q.expression }} ＝ <span class="text-[#D8C9B8]">____</span></span>
-              <span v-else>{{ q.expression }} ＝ <span class="font-bold text-[#E9824C]">{{ q.presentMode === 'blank' ? q.blankAnswer : q.answer }}</span></span>
+              <span v-if="view === 'q'" class="min-w-0">{{ q.expression }} ＝ <span class="text-[#D8C9B8]">____</span></span>
+              <span v-else class="min-w-0">{{ q.expression }} ＝ <span class="font-bold text-[#E9824C]">{{ q.presentMode === 'blank' ? q.blankAnswer : q.answer }}</span></span>
             </div>
           </div>
         </div>
         <div class="flex items-center justify-between border-t border-dashed border-[#E6D8C8] pt-1.5 text-[6.5px] text-[#B6A190]">
           <span>口算天天练 · 家长陪伴版</span>
-          <span>第 1 页 / 共 {{ paper.length > 30 ? 2 : 1 }} 页</span>
+          <span class="flex items-center gap-1.5">
+            <button
+              v-if="pageTotal > 1"
+              class="flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-[#C97B49]"
+              :class="pageIndex === 1 ? 'opacity-30' : 'bg-[#FBF1E6]'"
+              @click="flipPage(-1)"
+            >‹</button>
+            第 {{ pageIndex }} 页 / 共 {{ pageTotal }} 页
+            <button
+              v-if="pageTotal > 1"
+              class="flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-[#C97B49]"
+              :class="pageIndex === pageTotal ? 'opacity-30' : 'bg-[#FBF1E6]'"
+              @click="flipPage(1)"
+            >›</button>
+          </span>
         </div>
       </div>
 

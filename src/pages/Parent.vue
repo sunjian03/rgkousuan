@@ -14,8 +14,10 @@
  * - 导出格式为 JSON 备份（3.3.6 流程），原型「导出 Excel」文案不还原；
  *   导入（importJson）为 2.4 契约能力，原型未画，按 FR-09 迁移需求补上；
  * - 原型「6 岁」档案无 age 字段（3.2.1 未定义），改展示「已练 N 天」
- *   （打卡天数）；「20:30 后停用 / 远眺提醒」为原型示意 chip，实际 FR-11
- *   防沉迷落地在 prefs.dailyLimitMin（本节设置，D4/D3 入口检查）；
+ *   （打卡天数）；原型「20:30 后停用 / 每 15 分钟远眺提醒」为示意 chip，
+ *   实际 FR-11 防沉迷落地在 prefs.dailyLimitMin（本节设置，D4/D3 入口检查，
+ *   D4 练中每分钟检查），chips 文案按真实行为改为「每日上限 N 分钟 /
+ *   练中每分钟检查提醒」；
  * - 无后端，家长验证按 FR-11「本机界面切换」：进入本页即视为验证通过，
  *   30 分钟有效期与原型一致（到期提示重新进入）。
  */
@@ -51,7 +53,10 @@ const expireText = computed(() => {
 });
 
 // ---- 孩子档案（FR-09 多档案，上限 3 个） ----
-const profiles = computed(() => repo.load('profiles'));
+const profiles = computed(() => {
+  void repo.version; // 数据版本依赖：增改档案/导入/清空后列表即时刷新
+  return repo.load('profiles');
+});
 const profile = computed(() => store.currentProfile);
 const pid = computed(() => store.currentProfileId);
 const MAX_KIDS = 3;
@@ -150,6 +155,7 @@ const todayUsedMin = computed(() => {
   if (!pid.value) {
     return 0;
   }
+  void repo.version; // 数据版本依赖：导入备份/清空数据后已用时长即时刷新
   return Math.round(stats.getReport(pid.value, 'day').summary.totalDurationSec / 60);
 });
 const limitMin = computed(() => profile.value?.prefs?.dailyLimitMin ?? 30);
@@ -199,10 +205,13 @@ function importFile(e) {
 }
 
 /** 删除确认弹窗里的真实数据量（原型同款文案） */
-const deleteStats = computed(() => ({
-  records: repo.load('practice_records').length,
-  wrong: repo.load('wrong_items').length,
-}));
+const deleteStats = computed(() => {
+  void repo.version; // 数据版本依赖
+  return {
+    records: repo.load('practice_records').length,
+    wrong: repo.load('wrong_items').length,
+  };
+});
 const showDelete = ref(false);
 function doDelete() {
   repo.clear();
@@ -378,8 +387,8 @@ function toast(msg) {
             {{ leftMin > 0 ? `还可使用 ${leftMin} 分钟，超时后将自动进入休息提醒。` : '今日时长已用完，建议休息一下。' }}
           </p>
           <div class="mt-3 flex gap-2">
-            <span class="rounded-full bg-[#FBF3E9] px-2.5 py-1 text-[10px] text-[#A9825F]">🌙 20:30 后停用</span>
-            <span class="rounded-full bg-[#FBF3E9] px-2.5 py-1 text-[10px] text-[#A9825F]">每 15 分钟远眺提醒</span>
+            <span class="rounded-full bg-[#FBF3E9] px-2.5 py-1 text-[10px] text-[#A9825F]">🌙 每日上限 {{ limitMin }} 分钟</span>
+            <span class="rounded-full bg-[#FBF3E9] px-2.5 py-1 text-[10px] text-[#A9825F]">练中每分钟检查提醒</span>
           </div>
         </div>
       </section>

@@ -79,6 +79,12 @@ export class Repository {
       storage ||
       (typeof localStorage !== 'undefined' ? localStorage : new MemoryStorage());
     this.now = options.now || (() => Date.now());
+    /**
+     * 数据版本号：每次写入 +1。core 内部不使用；页面层把 repo 包成 reactive 后，
+     * computed 里 touch 本字段即可在任意写入后失效缓存（如家长中心改 prefs
+     * 后上限显示即时刷新）。纯实现细节，不影响 2.4 接口与 3.2 数据结构。
+     */
+    this.version = 0;
   }
 
   /** localStorage 键：ksl_ + 类型名；type 不在白名单 → 抛异常（编程错误） */
@@ -118,6 +124,7 @@ export class Repository {
       }
       this._memFallback.set(this.keyOf(type), JSON.stringify(value));
     }
+    this.version += 1; // 所有写路径统一经此：版本号推进，页面层响应式缓存失效
   }
 
   /** 降级内存参与读取：写入失败期间数据仍可读（storage 可用时优先 storage） */
@@ -172,11 +179,12 @@ export class Repository {
   clear(type) {
     if (type != null) {
       this.storage.removeItem(this.keyOf(type));
-      return;
+    } else {
+      for (const t of [...ENTITY_TYPES, ...CACHE_TYPES]) {
+        this.storage.removeItem(KEY_PREFIX + t);
+      }
     }
-    for (const t of [...ENTITY_TYPES, ...CACHE_TYPES]) {
-      this.storage.removeItem(KEY_PREFIX + t);
-    }
+    this.version += 1; // clear 不走 _write，单独推进版本号
   }
 
   // ------------------------------------------------------------------

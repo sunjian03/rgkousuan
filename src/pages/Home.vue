@@ -6,7 +6,7 @@
  * 页面层只调用 2.4 接口：repository / wrongbook / stats / achievement。
  */
 import { computed, ref } from 'vue';
-import { store, repo, semShort, termOf } from '../store.js';
+import { store, repo, semShort, termOf, visibleKps } from '../store.js';
 import { AVATARS, avatarOf } from '../avatars.js';
 import { WrongBook } from '../core/wrongbook.js';
 import { StatsService } from '../core/stats.js';
@@ -19,7 +19,10 @@ const wrongbook = new WrongBook(repo, { profileId: store.currentProfileId });
 const stats = new StatsService(repo);
 const achievement = new AchievementService(repo);
 
-const profiles = computed(() => repo.load('profiles'));
+const profiles = computed(() => {
+  void repo.version; // 数据版本依赖
+  return repo.load('profiles');
+});
 const profile = computed(() => store.currentProfile);
 const avatar = computed(() => avatarOf(profiles.value, store.currentProfileId));
 
@@ -69,7 +72,7 @@ const recommendKp = computed(() => {
   if (!profile.value) {
     return null;
   }
-  const kps = listKnowledgePoints(termOf(profile.value));
+  const kps = visibleKps(listKnowledgePoints(termOf(profile.value))); // 单位/面积周长题不参与推荐（产品决策，见 store.visibleKps）
   let best = kps[0];
   let bestScore = Infinity;
   for (const kp of kps) {

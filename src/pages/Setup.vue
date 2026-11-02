@@ -12,10 +12,14 @@
  *   按知识点平均分摊、逐知识点生成后按轮转合并，保证各知识点均匀分布；
  * - 「语音读题」「错题自动加入错题本」为页面层交互偏好（设计报告
  *   FR-03/FR-05 的默认行为），存入 prefs 扩展字段，默认开启 = 设计行为。
+ * - 产品决策（2026-11-02 用户确认）：单位换算类知识点（op='unit'，二下
+ *   「长度单位」、三下「面积与周长」）不参与出题，页面层在
+ *   listKnowledgePoints 结果上过滤；core 知识点配置（3.2.1(5)）与生成
+ *   算法保留不动，本偏差以此说明为准（Home/Print/Report 同规则）。
  */
 import { computed, ref, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
-import { store, repo, termOf, semShort } from '../store.js';
+import { store, repo, termOf, semShort, visibleKps } from '../store.js';
 import { avatarOf } from '../avatars.js';
 import { listKnowledgePoints, generate } from '../core/generator.js';
 import { WrongBook } from '../core/wrongbook.js';
@@ -36,7 +40,10 @@ const KP_ICONS = ['➕', '➖', '✖️', '➗', '📝', '📖', '📏', '🕐']
 
 const wrongbook = new WrongBook(repo, { profileId: store.currentProfileId });
 const profile = computed(() => store.currentProfile);
-const profiles = computed(() => repo.load('profiles'));
+const profiles = computed(() => {
+  void repo.version; // 数据版本依赖
+  return repo.load('profiles');
+});
 const avatar = computed(() => avatarOf(profiles.value, store.currentProfileId));
 
 const term = ref('一上');
@@ -47,7 +54,8 @@ const autoWrong = ref(true);
 const selectedIds = ref([]);
 const errMsg = ref('');
 
-const kps = computed(() => listKnowledgePoints(term.value));
+// 单位/面积周长知识点不参与出题（产品决策，见 store.visibleKps 说明）
+const kps = computed(() => visibleKps(listKnowledgePoints(term.value)));
 const estMin = computed(() => Math.max(3, Math.round(count.value * 0.26)));
 const allSelected = computed(() => kps.value.length > 0 && selectedIds.value.length === kps.value.length);
 const diffInfo = computed(() => DIFFS.find((d) => d.key === difficulty.value) ?? DIFFS[1]);
@@ -64,13 +72,13 @@ watchEffect(() => {
   difficulty.value = profile.value.prefs?.difficultyMode ?? 'mixed';
   voiceEnabled.value = profile.value.prefs?.speechEnabled ?? true;
   autoWrong.value = profile.value.prefs?.autoWrongToBook ?? true;
-  selectedIds.value = listKnowledgePoints(term.value).map((k) => k.id);
+  selectedIds.value = visibleKps(listKnowledgePoints(term.value)).map((k) => k.id);
   initialized = true;
 });
 
 function pickTerm(t) {
   term.value = t;
-  selectedIds.value = listKnowledgePoints(t).map((k) => k.id);
+  selectedIds.value = visibleKps(listKnowledgePoints(t)).map((k) => k.id);
   errMsg.value = '';
 }
 function toggleKp(id) {
@@ -131,7 +139,9 @@ function startPractice() {
     }
     const out = generate({
       kpId,
-      semester: semShort(term.value),
+      // M1 的 semester 参数为知识点配置格式（6 学期全称之一，3.2.1(5)），
+      // 与档案 semester 短值「上/下」（3.2.1(1)）不是同一格式，这里直接传 term 全称
+      semester: term.value,
       count: c,
       difficultyMode: difficulty.value,
       recentPapers,
