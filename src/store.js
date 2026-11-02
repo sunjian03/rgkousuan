@@ -13,6 +13,8 @@ export const repo = new Repository(); // 浏览器环境默认 localStorage；�
 export const store = reactive({
   currentProfileId: null,
   isParentMode: false,
+  /** 最近一次练习会话（D4 答题页写入，D5 成绩页消费后置空；内存态，刷新即丢，数据已入库不受影响） */
+  lastSession: null,
   /** 当前档案（profiles 实体）；未选择时返回 null */
   get currentProfile() {
     if (!this.currentProfileId) {
