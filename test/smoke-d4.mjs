@@ -124,4 +124,41 @@ if (day.summary.practiceCount !== 1) {
   process.exit(1);
 }
 console.log(`结算链路 OK：记录落库(score=${records[0].score})、星星+${reward.starsEarned}、打卡 ${achEntity.checkinDates[0]}、快照/日报告正常`);
-console.log('D4+D5 冒烟全部通过');
+
+// ============ D6 错题本链路 ============
+// 重练卷（buildReviewPaper 输出题目快照，id 为原题号，updateStreak 可直接回写）
+const reviewPaper = wb.buildReviewPaper(10, pid);
+if (reviewPaper.length !== 1 || reviewPaper[0].source !== 'wrong') {
+  console.error('FAIL 重练卷错误', reviewPaper);
+  process.exit(1);
+}
+// 连续答对 3 次 → 巩固（3.3.4 active --> mastered）
+const qid = reviewPaper[0].id;
+if (wb.updateStreak(qid, true, pid).status !== 'active') {
+  console.error('FAIL 第 1 次答对不应巩固');
+  process.exit(1);
+}
+wb.updateStreak(qid, true, pid);
+if (wb.updateStreak(qid, true, pid).status !== 'mastered') {
+  console.error('FAIL 连续答对 3 次未巩固');
+  process.exit(1);
+}
+if (wb.review({ profileId: pid }).length !== 0) {
+  console.error('FAIL 已巩固错题仍在待重练列表');
+  process.exit(1);
+}
+// 再次答错 → 重新收录（mastered --> active）
+wb.add({ wrongQuestions: [{ ...wrongQ, question: { ...wrongQ.question, id: stripW(wrongQ.question.id) } }] }, pid);
+if (wb.review({ profileId: pid }).length !== 1) {
+  console.error('FAIL 巩固后再错未重新收录');
+  process.exit(1);
+}
+// 时间筛选：今天（lastWrongAt=现在）应命中，昨天区间应为空
+const todayHit = wb.review({ profileId: pid, dateRange: { from: Date.now() - 3600_000, to: Date.now() } });
+const oldHit = wb.review({ profileId: pid, dateRange: { from: 0, to: Date.now() - 86400_000 } });
+if (todayHit.length !== 1 || oldHit.length !== 0) {
+  console.error('FAIL 时间筛选错误', todayHit, oldHit);
+  process.exit(1);
+}
+console.log('错题本链路 OK：重练卷巩固（3 连对 → mastered）→ 再错重收录 → dateRange 筛选正常');
+console.log('D4+D5+D6 冒烟全部通过');
