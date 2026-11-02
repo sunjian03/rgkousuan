@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>口算天天练 · 家长中心</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/iconify-icon/2.3.0/iconify-icon.min.js"></script>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#F3EADF;color:#4B3B32;}
+  .scroll-hide{scrollbar-width:none;}
+  .scroll-hide::-webkit-scrollbar{display:none;}
+  .card{background:#fff;border-radius:22px;border:1px solid #F6EADC;box-shadow:0 6px 18px rgba(139,112,86,.06);}
+  .sw-on{background:#E9824C;}
+  .sw-off{background:#E3D6C8;}
+</style>
+</head>
+<body class="w-full h-full m-0 overflow-hidden flex items-center justify-center">
+<div class="w-full h-full max-w-[393px] max-h-[852px] bg-[#FBF6EE] flex flex-col overflow-hidden relative shadow-2xl">
+<header class="shrink-0 px-5 pt-4 pb-3">
+<div class="flex items-center justify-between">
+<a class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-[#8B7565]" href="home.html">
+<iconify-icon icon="ph:caret-left-bold"></iconify-icon>
+</a>
+<h1 class="text-[16px] font-extrabold">家长中心</h1>
+<a class="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-[#8B7565]" href="calendar.html">
+<iconify-icon icon="ph:calendar-check-bold"></iconify-icon>
+</a>
+</div>
+<div class="mt-3 card px-4 py-3 flex items-center gap-3">
+<div class="w-10 h-10 rounded-2xl bg-[#EAF1EA] flex items-center justify-center text-[#6A9A79]">
+<iconify-icon class="text-xl" icon="ph:shield-check-fill"></iconify-icon>
+</div>
+<div class="flex-1">
+<p class="text-[12px] font-bold">家长验证已通过</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">验证有效期 30 分钟 · 11:42 到期</p>
+</div>
+<span class="chip bg-[#EFF5EF] text-[#6A9A79]">安全</span>
+</div>
+</header>
+<main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-hide px-5 pb-5">
+<!-- 孩子档案 -->
+<section class="mt-1">
+<div class="flex items-center justify-between mb-2">
+<h2 class="text-[13px] font-bold">孩子档案</h2>
+<button class="text-[11px] text-[#C97B49] flex items-center gap-0.5" onclick="addKid()">
+<iconify-icon icon="ph:plus-bold"></iconify-icon> 添加孩子
+        </button>
+</div>
+<div class="space-y-2">
+<div class="card p-3.5 flex items-center gap-3 border-2 border-[#F3D3B4]">
+<div class="w-11 h-11 rounded-2xl bg-[#FBE0CB] flex items-center justify-center text-2xl">🐣</div>
+<div class="flex-1">
+<div class="flex items-center gap-1.5">
+<p class="text-[14px] font-bold">小满</p>
+<span class="chip bg-[#FFF2E6] text-[#C97B49]">当前</span>
+</div>
+<p class="text-[10px] text-[#A99079] mt-0.5">二年级上 · 6 岁 · 已练 24 天</p>
+</div>
+<button class="w-8 h-8 rounded-full bg-[#FBF6EE] flex items-center justify-center text-[#B6A190]" onclick="editKid('小满')">
+<iconify-icon class="text-sm" icon="ph:pencil-simple-bold"></iconify-icon>
+</button>
+</div>
+<div class="card p-3.5 flex items-center gap-3">
+<div class="w-11 h-11 rounded-2xl bg-[#F2F2EE] flex items-center justify-center text-2xl">🐰</div>
+<div class="flex-1">
+<p class="text-[14px] font-bold">果果</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">三年级下 · 9 岁 · 已练 41 天</p>
+</div>
+<button class="w-8 h-8 rounded-full bg-[#FBF6EE] flex items-center justify-center text-[#B6A190]" onclick="editKid('果果')">
+<iconify-icon class="text-sm" icon="ph:pencil-simple-bold"></iconify-icon>
+</button>
+</div>
+</div>
+<p class="text-[10px] text-[#B6A190] mt-2 leading-relaxed">每位孩子拥有独立的学习记录、错题本与打卡日历，切换档案不影响数据。</p>
+</section>
+<!-- 练习设置 -->
+<section class="mt-4">
+<h2 class="text-[13px] font-bold mb-2">练习设置</h2>
+<div class="card divide-y divide-[#F6EEE4]">
+<div class="flex items-center justify-between px-3.5 py-3">
+<div>
+<p class="text-[12px] font-semibold">默认题量</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">一键出题时使用的题量</p>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="w-7 h-7 rounded-full bg-[#FBF3E9] text-[#B08F76] flex items-center justify-center" onclick="changeAmount(-5)">−</button>
+<span class="text-[13px] font-bold w-10 text-center" id="amtVal">30 题</span>
+<button class="w-7 h-7 rounded-full bg-[#FBF3E9] text-[#B08F76] flex items-center justify-center" onclick="changeAmount(5)">+</button>
+</div>
+</div>
+<div class="flex items-center justify-between px-3.5 py-3">
+<div>
+<p class="text-[12px] font-semibold">默认难度</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">可在出题时临时调整</p>
+</div>
+<select class="text-[12px] font-semibold text-[#C97B49] bg-[#FFF7EF] rounded-lg px-2 py-1.5 border border-[#F3D3B4] outline-none" onchange="showToast('默认难度已设为 ' + this.value)">
+<option>简单</option>
+<option selected="">标准</option>
+<option>挑战</option>
+</select>
+</div>
+<div class="flex items-center justify-between px-3.5 py-3">
+<div>
+<p class="text-[12px] font-semibold">错题自动收集</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">练习结束后自动写入错题本</p>
+</div>
+<span class="sw-on w-11 h-6 rounded-full relative transition cursor-pointer" data-on="1" onclick="toggleSw(this)">
+<span class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-white shadow transition"></span>
+</span>
+</div>
+<div class="flex items-center justify-between px-3.5 py-3">
+<div>
+<p class="text-[12px] font-semibold">答题音效</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">答对时播放轻提示音</p>
+</div>
+<span class="sw-off w-11 h-6 rounded-full relative transition cursor-pointer" data-on="0" onclick="toggleSw(this)">
+<span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition"></span>
+</span>
+</div>
+</div>
+</section>
+<!-- 护眼时长 -->
+<section class="mt-4">
+<h2 class="text-[13px] font-bold mb-2">护眼时长限制</h2>
+<div class="card p-3.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-xl bg-[#F3F7F2] flex items-center justify-center text-[#6A9A79]">
+<iconify-icon class="text-lg" icon="ph:eye-duotone"></iconify-icon>
+</div>
+<div>
+<p class="text-[12px] font-semibold">每日使用上限</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">今天已用 22 分钟</p>
+</div>
+</div>
+<span class="text-[13px] font-extrabold text-[#E9824C]">40 分钟</span>
+</div>
+<input class="mt-3 w-full accent-[#E9824C]" max="90" min="10" oninput="setLimit(this.value)" step="10" style="accent-color:#E9824C" type="range" value="40"/>
+<div class="flex justify-between text-[9px] text-[#C8B5A3] mt-0.5">
+<span>10 分钟</span><span>40 分钟</span><span>90 分钟</span>
+</div>
+<div class="mt-2.5 h-1.5 rounded-full bg-[#F3EBE1] overflow-hidden">
+<div class="h-full rounded-full bg-[#7BAE8B]" id="usageBar" style="width:55%"></div>
+</div>
+<p class="text-[10px] text-[#7D9A87] mt-1.5" id="limitHint">还可使用 18 分钟，超时后将自动进入休息提醒。</p>
+<div class="mt-3 flex gap-2">
+<span class="chip bg-[#FBF3E9] text-[#A9825F]">🌙 20:30 后停用</span>
+<span class="chip bg-[#FBF3E9] text-[#A9825F]">每 15 分钟远眺提醒</span>
+</div>
+</div>
+</section>
+<!-- 数据管理 -->
+<section class="mt-4">
+<h2 class="text-[13px] font-bold mb-2">数据管理</h2>
+<div class="card divide-y divide-[#F6EEE4]">
+<button class="w-full flex items-center gap-3 px-3.5 py-3.5" onclick="exportData()">
+<iconify-icon class="text-[#6A9A79] text-lg" icon="ph:download-simple-bold"></iconify-icon>
+<div class="flex-1 text-left">
+<p class="text-[12px] font-semibold">导出数据</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">练习记录、错题、报告（Excel）</p>
+</div>
+<iconify-icon class="text-[#D5C4B4]" icon="ph:caret-right"></iconify-icon>
+</button>
+<button class="w-full flex items-center gap-3 px-3.5 py-3.5" onclick="openDelete()">
+<iconify-icon class="text-[#D4796A] text-lg" icon="ph:trash-bold"></iconify-icon>
+<div class="flex-1 text-left">
+<p class="text-[12px] font-semibold text-[#C96B5A]">删除数据</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">不可恢复，请谨慎操作</p>
+</div>
+<iconify-icon class="text-[#D5C4B4]" icon="ph:caret-right"></iconify-icon>
+</button>
+</div>
+</section>
+<!-- 其他 -->
+<section class="card divide-y divide-[#F6EEE4] mt-3">
+<a class="flex items-center gap-3 px-3.5 py-3.5" href="print.html">
+<iconify-icon class="text-[#8B7565] text-lg" icon="ph:printer-duotone"></iconify-icon>
+<p class="text-[12px] font-semibold flex-1">打印题纸</p>
+<iconify-icon class="text-[#D5C4B4]" icon="ph:caret-right"></iconify-icon>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-3.5" href="calendar.html">
+<iconify-icon class="text-[#8B7565] text-lg" icon="ph:calendar-check-duotone"></iconify-icon>
+<p class="text-[12px] font-semibold flex-1">打卡日历</p>
+<iconify-icon class="text-[#D5C4B4]" icon="ph:caret-right"></iconify-icon>
+</a>
+<button class="w-full flex items-center gap-3 px-3.5 py-3.5" onclick="showToast('已是最新版本 2.4.0')">
+<iconify-icon class="text-[#8B7565] text-lg" icon="ph:info-duotone"></iconify-icon>
+<p class="text-[12px] font-semibold flex-1 text-left">关于口算天天练</p>
+<span class="text-[10px] text-[#B6A190]">v2.4.0</span>
+</button>
+</section>
+<!-- 退出儿童模式 -->
+<button class="mt-4 w-full h-12 rounded-2xl bg-white border border-[#EBCBAF] text-[#C97B49] text-[13px] font-bold flex items-center justify-center gap-1.5" onclick="openExit()">
+<iconify-icon icon="ph:sign-out-bold"></iconify-icon> 退出儿童模式
+    </button>
+<p class="text-center text-[10px] text-[#B6A190] mt-2 mb-2">退出后将回到家长首页，需要重新验证才能进入设置</p>
+</main>
+<!-- 退出确认弹窗 -->
+<div class="hidden absolute inset-0 z-40 bg-black/35 items-center justify-center px-8" id="exitModal">
+<div class="w-full bg-white rounded-3xl p-5 text-center">
+<div class="w-12 h-12 mx-auto rounded-2xl bg-[#FFF2E6] flex items-center justify-center text-[#E9824C]">
+<iconify-icon class="text-2xl" icon="ph:sign-out-duotone"></iconify-icon>
+</div>
+<h3 class="text-[15px] font-extrabold mt-3">确认退出儿童模式？</h3>
+<p class="text-[11px] text-[#8B7565] leading-relaxed mt-1.5">当前孩子「小满」的练习进度会保存。<br/>退出后需家长验证才能再次修改设置。</p>
+<div class="flex gap-2.5 mt-4">
+<button class="flex-1 h-11 rounded-xl bg-[#FBF3E9] text-[#8B7565] text-[13px] font-semibold" onclick="closeExit()">再练一会</button>
+<a class="flex-1 h-11 rounded-xl bg-[#E9824C] text-white text-[13px] font-bold flex items-center justify-center" href="home.html">确认退出</a>
+</div>
+</div>
+</div>
+<!-- 删除确认弹窗 -->
+<div class="hidden absolute inset-0 z-40 bg-black/35 items-center justify-center px-8" id="deleteModal">
+<div class="w-full bg-white rounded-3xl p-5 text-center">
+<div class="w-12 h-12 mx-auto rounded-2xl bg-[#FDECEC] flex items-center justify-center text-[#D4796A]">
+<iconify-icon class="text-2xl" icon="ph:warning-fill"></iconify-icon>
+</div>
+<h3 class="text-[15px] font-extrabold mt-3">删除全部练习数据？</h3>
+<p class="text-[11px] text-[#8B7565] leading-relaxed mt-1.5">将删除 210 条练习记录、12 道错题与打卡记录，且无法恢复。</p>
+<div class="flex gap-2.5 mt-4">
+<button class="flex-1 h-11 rounded-xl bg-[#FBF3E9] text-[#8B7565] text-[13px] font-semibold" onclick="closeDelete()">取消</button>
+<button class="flex-1 h-11 rounded-xl bg-[#D4796A] text-white text-[13px] font-bold" onclick="doDelete()">确认删除</button>
+</div>
+</div>
+</div>
+<div class="hidden absolute left-1/2 -translate-x-1/2 bottom-8 z-50 bg-[#4B3B32]/92 text-white text-[11px] px-4 py-2 rounded-full whitespace-nowrap" id="toast"></div>
+</div>
+<script>
+  let amount = 30;
+
+  function toggleSw(el){
+    const on = el.dataset.on === '1';
+    el.dataset.on = on ? '0' : '1';
+    el.classList.remove('sw-on', 'sw-off');
+    el.classList.add(on ? 'sw-off' : 'sw-on');
+    const dot = el.firstElementChild;
+    dot.classList.toggle('right-0.5', !on);
+    dot.classList.toggle('left-0.5', on);
+  }
+
+  function changeAmount(delta){
+    amount = Math.min(60, Math.max(10, amount + delta));
+    document.getElementById('amtVal').textContent = amount + ' 题';
+  }
+
+  function setLimit(v){
+    const used = 22;
+    const pct = Math.min(100, Math.round(used / v * 100));
+    document.getElementById('usageBar').style.width = pct + '%';
+    const left = Math.max(0, v - used);
+    const hint = document.getElementById('limitHint');
+    hint.textContent = left > 0 ? '还可使用 ' + left + ' 分钟，超时后将自动进入休息提醒。' : '今日时长已用完，建议休息一下。';
+    hint.classList.toggle('text-[#D4796A]', left === 0);
+  }
+
+  function openExit(){
+    const m = document.getElementById('exitModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+  }
+
+  function closeExit(){
+    const m = document.getElementById('exitModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+  }
+
+  function openDelete(){
+    const m = document.getElementById('deleteModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+  }
+
+  function closeDelete(){
+    const m = document.getElementById('deleteModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+  }
+
+  function doDelete(){
+    closeDelete();
+    showToast('数据已删除，页面将刷新');
+  }
+
+  function exportData(){
+    showToast('正在导出 Excel …');
+    setTimeout(function(){ showToast('已导出 学习记录_小满.xlsx'); }, 1300);
+  }
+
+  function addKid(){
+    showToast('新档案已创建：小星星 · 一年级上');
+  }
+
+  function editKid(name){
+    showToast('正在编辑「' + name + '」的档案');
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.remove('hidden');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function(){ t.classList.add('hidden'); }, 2200);
+  }
+</script>
+</body>
+</html>
