@@ -19,8 +19,10 @@ import { store, repo, termOf, semShort } from '../store.js';
 import { avatarOf } from '../avatars.js';
 import { listKnowledgePoints, generate } from '../core/generator.js';
 import { WrongBook } from '../core/wrongbook.js';
+import { StatsService } from '../core/stats.js';
 
 const router = useRouter();
+const statsSvc = new StatsService(repo); // FR-11：开始练习前核对今日已用时长
 
 const TERMS = ['一上', '一下', '二上', '二下', '三上', '三下'];
 /** 原型三档难度 → 2.4 契约 difficultyMode */
@@ -95,6 +97,14 @@ function startPractice() {
   errMsg.value = '';
   const pid = store.currentProfileId;
   if (!pid || !profile.value) {
+    return;
+  }
+  // FR-11 护眼与防沉迷：今日已用时长达到 prefs.dailyLimitMin 上限时阻止开新卷
+  // （每日上限在家长中心 D8 设置；练习中途超时的提醒见 Practice 页）
+  const limitMin = profile.value.prefs?.dailyLimitMin ?? 30;
+  const usedSec = statsSvc.getReport(pid, 'day').summary.totalDurationSec;
+  if (limitMin > 0 && usedSec >= limitMin * 60) {
+    errMsg.value = `今日练习时长已达上限（${limitMin} 分钟），休息一下眼睛吧`;
     return;
   }
   if (selectedIds.value.length === 0) {

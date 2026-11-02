@@ -14,12 +14,12 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen bg-amber-50 font-sans text-slate-800">
-    <div class="mx-auto flex min-h-screen w-full max-w-md flex-col bg-amber-50 shadow-xl">
+    <div class="mx-auto flex min-h-screen w-full max-w-[393px] flex-col bg-amber-50 shadow-xl">
       <main class="flex-1 pb-20">
         <router-view />
       </main>
       <nav
-        class="fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-amber-200 bg-white/95 backdrop-blur"
+        class="fixed bottom-0 left-1/2 z-50 w-full max-w-[393px] -translate-x-1/2 border-t border-amber-200 bg-white/95 backdrop-blur"
       >
         <div class="grid grid-cols-5 text-xs">
           <router-link to="/" class="nav-item" :class="{ active: $route.path === '/' }">

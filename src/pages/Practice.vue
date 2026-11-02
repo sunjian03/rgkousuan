@@ -15,6 +15,9 @@ import { useRouter } from 'vue-router';
 import { store, repo } from '../store.js';
 import { PracticeSession } from '../core/judge.js';
 import { listKnowledgePoints } from '../core/generator.js';
+import { StatsService } from '../core/stats.js';
+
+const stats = new StatsService(repo); // FR-11：练习中核对累计使用时长
 
 const router = useRouter();
 
@@ -151,6 +154,7 @@ onMounted(() => {
   locked.value = false;
   tick();
   timer = setInterval(tick, 1000);
+  eyeTimer = setInterval(checkEyeLimit, 60000); // FR-11：每分钟核对一次累计时长
   if (speechOn()) {
     speak(readExpr(paper[idx.value]));
   }
@@ -159,7 +163,32 @@ onUnmounted(() => {
   if (timer) {
     clearInterval(timer);
   }
+  if (eyeTimer) {
+    clearInterval(eyeTimer);
+  }
 });
+
+// ---- FR-11 护眼提醒：练习中累计时长（今日已结算 + 本次进行中）达上限时
+// 提示休息（不强制打断，5.2 流程由家长中心配置上限，D8） ----
+let eyeTimer = null;
+let eyeNotified = false;
+const eyeNotice = ref(null); // { text } | null
+function checkEyeLimit() {
+  const limitMin = store.currentProfile?.prefs?.dailyLimitMin;
+  if (!limitMin || eyeNotified || !session.startedAt) {
+    return;
+  }
+  const doneSec = stats.getReport(pid, 'day').summary.totalDurationSec;
+  const curSec = doneSec + Math.floor((Date.now() - session.startedAt) / 1000);
+  if (curSec >= limitMin * 60) {
+    eyeNotified = true;
+    eyeNotice.value = { text: `已练习 ${Math.floor(curSec / 60)} 分钟，休息一下眼睛吧 👀` };
+    speak('休息一下，看看远处');
+    setTimeout(() => {
+      eyeNotice.value = null;
+    }, 5000);
+  }
+}
 
 // ---- 键盘输入 ----
 function press(d) {
@@ -298,6 +327,10 @@ function tokenClass(t) {
 
 <template>
   <div class="flex min-h-[calc(100dvh-80px)] flex-col px-5 pb-4 pt-4">
+    <!-- FR-11 护眼提醒（练习中达每日上限，5 秒自动消失，不强制打断） -->
+    <div v-if="eyeNotice" class="fixed left-1/2 top-16 z-50 w-[calc(100%-48px)] max-w-[345px] -translate-x-1/2 rounded-2xl border border-[#F3D3B4] bg-[#FFF7EC] px-4 py-3 text-center text-[12px] font-semibold text-[#8B7565] shadow-xl">
+      {{ eyeNotice.text }}
+    </div>
     <!-- 顶部：退出 / 计时 / 星星 -->
     <header class="flex shrink-0 items-center justify-between">
       <button class="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#B6A190] shadow-sm" @click="exitPractice">✕</button>

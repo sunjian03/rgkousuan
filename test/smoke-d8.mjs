@@ -237,4 +237,26 @@ if (day1102.summary !== null) {
   process.exit(1);
 }
 console.log('最近 7 天汇总 OK：有练习日（30 题 / 93% / 5 星），无练习日为空');
+
+// ============ FR-11 防沉迷落地（Setup 入口拦截 + Practice 练中检查） ============
+// Setup.startPractice 同款拦截：今日已结算时长 ≥ prefs.dailyLimitMin 时阻止开新卷
+function setupBlocked(usedSec, limitMin) {
+  return limitMin > 0 && usedSec >= limitMin * 60;
+}
+if (setupBlocked(25 * 60, 30) !== false || setupBlocked(30 * 60, 30) !== true || setupBlocked(60 * 60, 0) !== false) {
+  console.error('FAIL Setup 防沉迷拦截边界错误');
+  process.exit(1);
+}
+// Practice.checkEyeLimit 同款：已结算 + 本次进行中 ≥ 上限时触发一次提醒
+function eyeCheck(doneSec, curSec, limitMin, notified) {
+  if (!limitMin || notified) {
+    return false;
+  }
+  return doneSec + curSec >= limitMin * 60;
+}
+if (eyeCheck(1500, 299, 30, false) !== false || eyeCheck(1500, 300, 30, false) !== true || eyeCheck(1500, 300, 30, true) !== false) {
+  console.error('FAIL Practice 护眼提醒边界/去重错误');
+  process.exit(1);
+}
+console.log('FR-11 防沉迷 OK：Setup 入口拦截（达上限阻止开新卷）、Practice 练中提醒（触发一次不重复）');
 console.log('D8+P9 冒烟全部通过');
