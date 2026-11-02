@@ -1,5 +1,8 @@
 {
-  "name": "kousuan-h5",
+  "name": "rgkousuan",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
 }

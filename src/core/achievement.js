@@ -133,8 +133,9 @@ export class AchievementService {
     const detail = sessionResult.detail || [];
 
     // 1) 落库练习记录（设计报告 3.2.1 practice_records；paper 由题目快照组成）
+    // _id 加随机后缀：同一毫秒内连续结算也不互相覆盖
     const record = {
-      _id: 'pr__' + pid + '__' + now,
+      _id: 'pr__' + pid + '__' + now + '_' + Math.random().toString(36).slice(2, 6),
       profileId: pid,
       date: this.fmtDate(now),
       paper: detail.map((d) => d.question),
@@ -168,7 +169,10 @@ export class AchievementService {
 
     // 4) 勋章检测（条件按上文注释的自定规则）
     const records = this.repo.load('practice_records').filter((r) => r.profileId === pid);
-    const perfectCount = records.filter((r) => r.total > 0 && r.score === r.total).length;
+    // 满分判定：score（答对题数）等于卷面题数（3.2.1 practice_records 无 total 字段，以 paper 长度计）
+    const perfectCount = records.filter(
+      (r) => r.paper.length > 0 && r.score === r.paper.length
+    ).length;
     const masteredCount = this.repo
       .load('wrong_items')
       .filter((w) => w.profileId === pid && w.status === 'mastered').length;

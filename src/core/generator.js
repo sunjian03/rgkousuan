@@ -146,6 +146,7 @@ export function generate(options = {}) {
     }
     let q = null;
     let last = null;
+    let recentConflict = false; // 已撞过近 3 次快照（候选空间不足的放宽信号）
     for (let t = 0; t < PER_QUESTION_TRIES; t++) {
       tries++;
       const cand = genOne(kp, difficulty, random);
@@ -154,8 +155,18 @@ export function generate(options = {}) {
       }
       last = cand;
       const key = normalizeExpr(cand.expression);
-      // R2：先查本卷 Set，再查近 3 次快照
-      if (paperSet.has(key) || recentSet.has(key)) {
+      // R2：本卷内重复为硬约束（先查本卷 Set）；与近 3 次快照重复优先避开，
+      // 但第二次再撞即接受（候选空间不足时自动放宽，避免烧满重试上限导致
+      // 出不满题量——设计报告 3.3.1「自动放宽比例并记录日志」）
+      if (paperSet.has(key)) {
+        continue;
+      }
+      if (recentSet.has(key)) {
+        if (recentConflict) {
+          q = cand;
+          break;
+        }
+        recentConflict = true;
         continue;
       }
       q = cand;
