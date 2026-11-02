@@ -17,7 +17,7 @@
  */
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { store, repo } from '../store.js';
+import { store, repo, semShort } from '../store.js';
 import { WrongBook } from '../core/wrongbook.js';
 import { StatsService } from '../core/stats.js';
 import { AchievementService } from '../core/achievement.js';
@@ -118,7 +118,7 @@ const kpSummary = computed(() => {
 });
 const profileLine = computed(() => {
   const g = ['一', '二', '三'][profile?.grade - 1] ?? '一';
-  return `${profile?.nickname ?? ''} · ${g}年级${profile?.semester ?? ''}`;
+  return `${profile?.nickname ?? ''} · ${g}年级${semShort(profile?.semester)}`;
 });
 const nowText = (() => {
   const d = new Date();

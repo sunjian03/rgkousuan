@@ -10,6 +10,27 @@ import { Repository } from './core/repository.js';
 
 export const repo = new Repository(); // 浏览器环境默认 localStorage；数据损坏自动降级（NFR-06）
 
+/** 年级汉字表（1~3 年级，3.2.1 档案 grade 字段展示用） */
+export const GRADE_NAMES = ['一', '二', '三'];
+
+/**
+ * semester 字段约定（设计报告 3.2.1：学期，值「上/下」）：
+ * - 存储值：'上' / '下'；
+ * - 兼容旧数据：早期版本误存了 '一上' 等学期全称，读取时取末字归一。
+ */
+export function semShort(semester) {
+  if (!semester) {
+    return '上';
+  }
+  return semester === '上' || semester === '下' ? semester : semester.slice(-1);
+}
+
+/** 档案 → 知识点学期全称（如 二上），generator.listKnowledgePoints 的入参格式 */
+export function termOf(profile) {
+  const g = GRADE_NAMES[(profile?.grade ?? 1) - 1] ?? '一';
+  return g + semShort(profile?.semester);
+}
+
 export const store = reactive({
   currentProfileId: null,
   isParentMode: false,
@@ -35,7 +56,7 @@ export const store = reactive({
         _id: 'p_' + Date.now().toString(36),
         nickname: '小朋友',
         grade: 1,
-        semester: '一上',
+        semester: '上',
         prefs: { questionCount: 30, difficultyMode: 'mixed', dailyLimitMin: 30 },
         createdAt: Date.now(),
       };

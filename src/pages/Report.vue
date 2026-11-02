@@ -21,7 +21,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 
 // 按需注册：只打包折线/柱状图（报告页仅用两种图，减小 chunk）
 echarts.use([LineChart, BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
-import { store, repo } from '../store.js';
+import { store, repo, semShort, termOf } from '../store.js';
 import { StatsService } from '../core/stats.js';
 import { WrongBook } from '../core/wrongbook.js';
 import { AchievementService } from '../core/achievement.js';
@@ -117,11 +117,11 @@ const minDelta = computed(() => {
 
 /** 知识点掌握度（当前学期，3.3.5 近 10 次口径；null=未练习） */
 const kpList = computed(() => {
-  const sem = profile?.semester;
-  if (!sem) {
+  if (!profile) {
     return [];
   }
-  return listKnowledgePoints(sem).map((kp) => {
+  const term = termOf(profile);
+  return listKnowledgePoints(term).map((kp) => {
     const m = stats.getMastery(pid, kp.id);
     return {
       ...kp,
@@ -301,7 +301,7 @@ function exportTip() {
         <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-[#FBE0CB] text-[13px]">🐣</span>
         <span class="font-bold text-[#4B3B32]">{{ profile?.nickname }}</span>
         <span class="text-[#C8B5A3]">·</span>
-        <span>{{ ['一', '二', '三'][profile?.grade - 1] ?? '一' }}年级{{ profile?.semester }}</span>
+        <span>{{ ['一', '二', '三'][profile?.grade - 1] ?? '一' }}年级{{ semShort(profile?.semester) }}</span>
         <span v-if="rateDelta !== '首周期' && rateDelta !== '持平'" class="ml-auto rounded-full bg-[#EFF5EF] px-2 py-0.5 text-[#6A9A79]">本周进步明显</span>
       </div>
       <!-- 日/周/月 -->

@@ -14,7 +14,7 @@
  */
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { store, repo } from '../store.js';
+import { store, repo, semShort } from '../store.js';
 import { WrongBook } from '../core/wrongbook.js';
 import { listKnowledgePoints } from '../core/generator.js';
 
@@ -130,7 +130,7 @@ function resetFilter() {
         <router-link to="/" class="flex h-9 w-9 items-center justify-center rounded-full bg-[#FBF6EE] text-[#8B7565]">‹</router-link>
         <div class="text-center">
           <h1 class="text-[16px] font-extrabold leading-tight">错题本</h1>
-          <p class="text-[10px] text-[#B6A190]">{{ profile?.nickname }} · {{ ['一', '二', '三'][profile?.grade - 1] ?? '一' }}年级{{ profile?.semester }}</p>
+          <p class="text-[10px] text-[#B6A190]">{{ profile?.nickname }} · {{ ['一', '二', '三'][profile?.grade - 1] ?? '一' }}年级{{ semShort(profile?.semester) }}</p>
         </div>
         <button class="flex h-9 w-9 items-center justify-center rounded-full bg-[#FBF6EE] text-[#8B7565]" @click="showSort = true">⇅</button>
       </div>

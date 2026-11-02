@@ -15,7 +15,7 @@
  */
 import { computed, ref, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
-import { store, repo } from '../store.js';
+import { store, repo, termOf, semShort } from '../store.js';
 import { avatarOf } from '../avatars.js';
 import { listKnowledgePoints, generate } from '../core/generator.js';
 import { WrongBook } from '../core/wrongbook.js';
@@ -57,7 +57,7 @@ watchEffect(() => {
   if (initialized || !profile.value) {
     return;
   }
-  term.value = profile.value.semester ?? '一上';
+  term.value = termOf(profile.value); // semester 存「上/下」（3.2.1），合成知识点学期全称
   count.value = profile.value.prefs?.questionCount ?? 30;
   difficulty.value = profile.value.prefs?.difficultyMode ?? 'mixed';
   voiceEnabled.value = profile.value.prefs?.speechEnabled ?? true;
@@ -121,7 +121,7 @@ function startPractice() {
     }
     const out = generate({
       kpId,
-      semester: term.value,
+      semester: semShort(term.value),
       count: c,
       difficultyMode: difficulty.value,
       recentPapers,
@@ -152,7 +152,7 @@ function startPractice() {
   // 偏好写回档案（prefs 三字段为设计报告 3.2.1 契约；语音/错题开关为扩展项）
   repo.save('profiles', {
     ...profile.value,
-    semester: term.value,
+    semester: semShort(term.value),
     prefs: {
       ...profile.value.prefs,
       questionCount: count.value,
@@ -182,7 +182,7 @@ function startPractice() {
         <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-[#FBE0CB]">{{ avatar }}</div>
         <p class="text-[12px] text-[#8B7565]">
           当前档案：<span class="font-bold text-[#4B3B32]">{{ profile?.nickname }}</span> ·
-          {{ ['一', '二', '三'][profile?.grade - 1] ?? '一' }}年级{{ profile?.semester }}
+          {{ ['一', '二', '三'][profile?.grade - 1] ?? '一' }}年级{{ semShort(profile?.semester) }}
         </p>
         <router-link to="/parent" class="ml-auto text-[11px] text-[#C97B49]">切换</router-link>
       </div>

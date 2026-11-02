@@ -6,7 +6,7 @@
  * 页面层只调用 2.4 接口：repository / wrongbook / stats / achievement。
  */
 import { computed, ref } from 'vue';
-import { store, repo } from '../store.js';
+import { store, repo, semShort, termOf } from '../store.js';
 import { AVATARS, avatarOf } from '../avatars.js';
 import { WrongBook } from '../core/wrongbook.js';
 import { StatsService } from '../core/stats.js';
@@ -31,7 +31,7 @@ const profileMeta = computed(() => {
   const gradeName = ['一', '二', '三'][profile.value.grade - 1] ?? '一';
   const ach = repo.load('achievements', 'ach__' + profile.value._id);
   const days = ach?.checkinDates?.length ?? 0;
-  return `${gradeName}年级${profile.value.semester} · 已练习 ${days} 天`;
+  return `${gradeName}年级${semShort(profile.value.semester)} · 已练习 ${days} 天`;
 });
 
 /** 连击天数（连续打卡，M6 同款算法） */
@@ -69,7 +69,7 @@ const recommendKp = computed(() => {
   if (!profile.value) {
     return null;
   }
-  const kps = listKnowledgePoints(profile.value.semester);
+  const kps = listKnowledgePoints(termOf(profile.value));
   let best = kps[0];
   let bestScore = Infinity;
   for (const kp of kps) {
@@ -144,7 +144,7 @@ const todayText = `${today.getMonth() + 1}月${today.getDate()}日`;
             @click="pickKid(p._id)"
           >
             <p class="text-[13px] font-bold">{{ AVATARS[i % AVATARS.length] }} {{ p.nickname }}</p>
-            <p class="text-[10px] text-[#8B7565]">{{ ['一', '二', '三'][p.grade - 1] }}年级{{ p.semester }}</p>
+            <p class="text-[10px] text-[#8B7565]">{{ ['一', '二', '三'][p.grade - 1] }}年级{{ semShort(p.semester) }}</p>
           </button>
           <router-link to="/parent" class="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-[#DCCBB8] px-3 py-2 text-[#A99079]">
             <span>＋</span>
@@ -164,7 +164,7 @@ const todayText = `${today.getMonth() + 1}月${today.getDate()}日`;
               <p class="text-[11px] font-semibold text-[#B08F76]">今日练习 · {{ todayText }}</p>
               <h2 class="mt-1 text-[19px] font-extrabold">{{ recommendKp?.name ?? '口算练习' }}</h2>
               <p class="mt-1 text-[11px] text-[#8B7565]">
-                {{ profile?.semester }} · {{ todayState.type === 'draft' ? '上次练习未完成，可继续' : todayState.type === 'done' ? '今日已打卡，保持节奏' : '每天进步一点点' }}
+                {{ semShort(profile?.semester) }} · {{ todayState.type === 'draft' ? '上次练习未完成，可继续' : todayState.type === 'done' ? '今日已打卡，保持节奏' : '每天进步一点点' }}
               </p>
             </div>
             <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
