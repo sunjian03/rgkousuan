@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>口算天天练 · 学习报告</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/iconify-icon/2.3.0/iconify-icon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#F3EADF;color:#4B3B32;}
+  .scroll-hide{scrollbar-width:none;}
+  .scroll-hide::-webkit-scrollbar{display:none;}
+  .card{background:#fff;border-radius:22px;border:1px solid #F6EADC;box-shadow:0 6px 18px rgba(139,112,86,.06);}
+  .tab.on{background:#E9824C;color:#fff;box-shadow:0 4px 10px rgba(233,130,76,.25);}
+</style>
+</head>
+<body class="w-full h-full m-0 overflow-hidden flex items-center justify-center">
+<div class="w-full h-full max-w-[393px] max-h-[852px] bg-[#FBF6EE] flex flex-col overflow-hidden relative shadow-2xl">
+<header class="shrink-0 bg-white px-5 pt-4 pb-3">
+<div class="flex items-center justify-between">
+<a class="w-9 h-9 rounded-full bg-[#FBF6EE] flex items-center justify-center text-[#8B7565]" href="home.html">
+<iconify-icon icon="ph:caret-left-bold"></iconify-icon>
+</a>
+<h1 class="text-[16px] font-extrabold">学习报告</h1>
+<button class="w-9 h-9 rounded-full bg-[#FBF6EE] flex items-center justify-center text-[#8B7565]" onclick="showToast('报告已生成 PDF，可在打印页导出')">
+<iconify-icon icon="ph:export-bold"></iconify-icon>
+</button>
+</div>
+<div class="mt-3 flex items-center gap-2 text-[11px] text-[#8B7565]">
+<span class="w-6 h-6 rounded-lg bg-[#FBE0CB] flex items-center justify-center text-[13px]">🐣</span>
+<span class="font-bold text-[#4B3B32]">小满</span>
+<span class="text-[#C8B5A3]">·</span>
+<span>二年级上</span>
+<span class="ml-auto chip bg-[#EFF5EF] text-[#6A9A79]">本周进步明显</span>
+</div>
+<!-- 日/周/月 -->
+<div class="mt-3 grid grid-cols-3 gap-1 bg-[#FBF3E9] p-1 rounded-2xl">
+<button class="tab h-8 rounded-xl text-[12px] font-semibold text-[#A99079] transition" data-tab="day" onclick="switchTab(this,'day')">日</button>
+<button class="tab on h-8 rounded-xl text-[12px] font-semibold text-[#A99079] transition" data-tab="week" onclick="switchTab(this,'week')">周</button>
+<button class="tab h-8 rounded-xl text-[12px] font-semibold text-[#A99079] transition" data-tab="month" onclick="switchTab(this,'month')">月</button>
+</div>
+</header>
+<main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-hide px-5 pt-3 pb-5">
+<!-- 概览 -->
+<section class="grid grid-cols-3 gap-2">
+<div class="card px-3 py-3">
+<p class="text-[20px] font-extrabold text-[#E9824C] leading-none" id="avgRate">92<span class="text-[11px]">%</span></p>
+<p class="text-[10px] text-[#A99079] mt-1.5">平均正确率</p>
+<p class="text-[9px] text-[#7D9A87] mt-0.5">↑ 4.2%</p>
+</div>
+<div class="card px-3 py-3">
+<p class="text-[20px] font-extrabold text-[#4B3B32] leading-none" id="totalQ">210<span class="text-[11px] font-medium">题</span></p>
+<p class="text-[10px] text-[#A99079] mt-1.5">完成题量</p>
+<p class="text-[9px] text-[#7D9A87] mt-0.5">7 次练习</p>
+</div>
+<div class="card px-3 py-3">
+<p class="text-[20px] font-extrabold text-[#4B3B32] leading-none" id="avgMin">6.4<span class="text-[11px] font-medium">分</span></p>
+<p class="text-[10px] text-[#A99079] mt-1.5">平均用时</p>
+<p class="text-[9px] text-[#B08F76] mt-0.5">↓ 0.6 分</p>
+</div>
+</section>
+<!-- 正确率折线 -->
+<section class="card p-4 mt-3">
+<div class="flex items-center justify-between">
+<h2 class="text-[13px] font-bold flex items-center gap-1.5">
+<iconify-icon class="text-[#E9824C]" icon="ph:chart-line-up-duotone"></iconify-icon>正确率趋势
+        </h2>
+<span class="text-[10px] text-[#B6A190]">单位：%</span>
+</div>
+<div class="w-full h-[168px] mt-1" id="rateChart"></div>
+</section>
+<!-- 用时趋势 -->
+<section class="card p-4 mt-3">
+<div class="flex items-center justify-between">
+<h2 class="text-[13px] font-bold flex items-center gap-1.5">
+<iconify-icon class="text-[#9A86C0]" icon="ph:timer-duotone"></iconify-icon>每次用时
+        </h2>
+<span class="text-[10px] text-[#B6A190]">单位：分钟</span>
+</div>
+<div class="w-full h-[120px] mt-1" id="timeChart"></div>
+</section>
+<!-- 知识点掌握度 -->
+<section class="mt-4">
+<div class="flex items-center justify-between mb-2.5">
+<h2 class="text-[13px] font-bold">知识点掌握度</h2>
+<a class="text-[11px] text-[#C97B49] flex items-center gap-0.5" href="mistakes.html">只看薄弱项 <iconify-icon icon="ph:caret-right"></iconify-icon></a>
+</div>
+<div class="space-y-2" id="kpList"></div>
+</section>
+<!-- 学习建议 -->
+<section class="card p-4 mt-3 bg-gradient-to-br from-[#FFF8F0] to-white">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-xl bg-[#FDF0DE] flex items-center justify-center text-[#D8A253]">
+<iconify-icon icon="ph:lightbulb-filament-fill"></iconify-icon>
+</div>
+<h2 class="text-[13px] font-bold">本周学习建议</h2>
+</div>
+<ul class="mt-2.5 space-y-2 text-[11px] text-[#8B7565] leading-relaxed">
+<li class="flex gap-1.5"><span class="text-[#E9824C] font-bold">1.</span>表内乘法 7-9 还有 2 道反复出错，先用口诀卡片背 3 分钟再练。</li>
+<li class="flex gap-1.5"><span class="text-[#E9824C] font-bold">2.</span>退位减法正确率 78%，建议每天 10 道专项练习。</li>
+<li class="flex gap-1.5"><span class="text-[#E9824C] font-bold">3.</span>保持每天一次短练习，比周末集中 40 分钟更有效。</li>
+</ul>
+<a class="mt-3 h-10 w-full rounded-xl bg-[#FBF1E6] text-[#C97B49] text-[12px] font-bold flex items-center justify-center gap-1" href="setup.html">
+<iconify-icon icon="ph:magic-wand-fill"></iconify-icon> 按建议生成专项练习
+      </a>
+</section>
+</main>
+<div class="hidden absolute left-1/2 -translate-x-1/2 bottom-6 z-30 bg-[#4B3B32]/90 text-white text-[11px] px-4 py-2 rounded-full whitespace-nowrap" id="toast"></div>
+</div>
+<script>
+  const dataSets = {
+    day: {x:['8:00','8:30','9:00','9:30','10:00','10:30','11:00'], rate:[88,92,90,95,93,96,94], time:[7,6.5,6.8,5.9,6.1,5.4,5.6], total:'30题', avg:1},
+    week: {x:['周一','周二','周三','周四','周五','周六','周日'], rate:[84,86,88,87,91,93,92], time:[8.2,7.8,7.5,7.2,6.9,6.4,6.1], total:'210题', avg:0},
+    month: {x:['第1周','第2周','第3周','第4周'], rate:[80,85,88,92], time:[9.4,8.2,7.4,6.4], total:'860题', avg:0}
+  };
+
+  let rateChart, timeChart;
+  let currentTab = 'week';
+
+  function initCharts(){
+    rateChart = echarts.init(document.getElementById('rateChart'));
+    timeChart = echarts.init(document.getElementById('timeChart'));
+    drawCharts('week');
+    window.addEventListener('resize', function(){
+      rateChart.resize();
+      timeChart.resize();
+    });
+  }
+
+  function drawCharts(key){
+    const d = dataSets[key];
+    rateChart.setOption({
+      grid: {left: 30, right: 12, top: 18, bottom: 22},
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(75,59,50,.92)',
+        borderWidth: 0,
+        textStyle: {color: '#fff', fontSize: 11},
+        formatter: function(p){ return p[0].axisValue + '：正确率 ' + p[0].value + '%'; }
+      },
+      xAxis: {
+        type: 'category',
+        data: d.x,
+        axisLine: {lineStyle: {color: '#F0E3D5'}},
+        axisTick: {show: false},
+        axisLabel: {color: '#B6A190', fontSize: 9, interval: 0}
+      },
+      yAxis: {
+        type: 'value',
+        min: 60,
+        max: 100,
+        interval: 10,
+        axisLabel: {color: '#C8B5A3', fontSize: 9, formatter: '{value}'},
+        splitLine: {lineStyle: {color: '#F7EEE3'}}
+      },
+      series: [{
+        type: 'line',
+        data: d.rate,
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 7,
+        itemStyle: {color: '#E9824C', borderColor: '#fff', borderWidth: 2},
+        lineStyle: {width: 3, color: '#E9824C'},
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {offset: 0, color: 'rgba(233,130,76,.26)'},
+            {offset: 1, color: 'rgba(233,130,76,.02)'}
+          ])
+        }
+      }]
+    });
+
+    timeChart.setOption({
+      grid: {left: 30, right: 12, top: 14, bottom: 20},
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(75,59,50,.92)',
+        borderWidth: 0,
+        textStyle: {color: '#fff', fontSize: 11},
+        formatter: function(p){ return p[0].axisValue + '：用时 ' + p[0].value + ' 分钟'; }
+      },
+      xAxis: {
+        type: 'category',
+        data: d.x,
+        axisLine: {lineStyle: {color: '#F0E3D5'}},
+        axisTick: {show: false},
+        axisLabel: {color: '#B6A190', fontSize: 9, interval: 0}
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: {color: '#C8B5A3', fontSize: 9},
+        splitLine: {lineStyle: {color: '#F7EEE3'}}
+      },
+      series: [{
+        type: 'bar',
+        data: d.time,
+        barWidth: '46%',
+        itemStyle: {
+          borderRadius: [6, 6, 0, 0],
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {offset: 0, color: '#C9B6E4'},
+            {offset: 1, color: '#EFE7F9'}
+          ])
+        }
+      }]
+    });
+
+    document.getElementById('totalQ').innerHTML = d.total.replace('题', '') + '<span class="text-[11px] font-medium">题</span>';
+    document.getElementById('avgRate').innerHTML = d.rate[d.rate.length - 1] + '<span class="text-[11px]">%</span>';
+    document.getElementById('avgMin').innerHTML = d.time[d.time.length - 1] + '<span class="text-[11px] font-medium">分</span>';
+  }
+
+  const kpItems = [
+    {name:'表内乘法（7-9）', pct:72, level:'需加强', strong:false},
+    {name:'100 以内退位减法', pct:78, level:'需加强', strong:false},
+    {name:'混合运算（先乘后加）', pct:86, level:'基本掌握', strong:false},
+    {name:'表内乘法（2-6）', pct:95, level:'已掌握', strong:true},
+    {name:'100 以内进位加法', pct:97, level:'已掌握', strong:true}
+  ];
+
+  function renderKp(){
+    document.getElementById('kpList').innerHTML = kpItems.map(function(k){
+      const color = k.pct >= 90 ? '#7BAE8B' : (k.pct >= 80 ? '#E9A95A' : '#D9826A');
+      const badge = k.pct >= 90 ? 'bg-[#EFF5EF] text-[#6A9A79]' : (k.pct >= 80 ? 'bg-[#FDF4E3] text-[#C99A3D]' : 'bg-[#FDECEC] text-[#D4796A]');
+      return '<div class="card px-3.5 py-3">' +
+        '<div class="flex items-center justify-between">' +
+          '<p class="text-[12px] font-semibold">' + k.name + '</p>' +
+          '<span class="chip ' + badge + '">' + k.level + '</span>' +
+        '</div>' +
+        '<div class="mt-2 flex items-center gap-2">' +
+          '<div class="flex-1 h-2 rounded-full bg-[#F6EDE3] overflow-hidden">' +
+            '<div class="h-full rounded-full" style="width:' + k.pct + '%;background:' + color + '"></div>' +
+          '</div>' +
+          '<span class="text-[11px] font-bold w-8 text-right" style="color:' + color + '">' + k.pct + '%</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function switchTab(btn, key){
+    currentTab = key;
+    document.querySelectorAll('.tab').forEach(function(el){
+      el.classList.toggle('on', el === btn);
+      el.classList.toggle('text-[#A99079]', el !== btn);
+    });
+    drawCharts(key);
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(function(){ t.classList.add('hidden'); }, 2000);
+  }
+
+  renderKp();
+  initCharts();
+</script>
+</body>
+</html>
