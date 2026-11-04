@@ -1,1 +1,0 @@
-var e=[`🐣`,`🐰`,`🦊`,`🐻`,`🐼`,`🐨`];function t(t,n){let r=t.findIndex(e=>e._id===n);return e[Math.max(0,r)%e.length]}export{t as n,e as t};
