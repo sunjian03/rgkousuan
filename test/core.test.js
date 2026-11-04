@@ -249,9 +249,9 @@ describe('parser（3.3.2 递归下降求值器）', () => {
 
 // ================= R1~R6 出题引擎 =================
 describe('generator（3.3.1 出题引擎 R1~R6）', () => {
-  test('R1 不超纲 + R5 生成即校验：25 知识点 × 3 难度档 × 10 题 = 750 题逐题核对', () => {
+  test('R1 不超纲 + R5 生成即校验：26 知识点 × 3 难度档 × 10 题 = 780 题逐题核对', () => {
     const n = eachPaper(10);
-    assert.equal(n, 750);
+    assert.equal(n, 780);
   });
 
   test('R2 防重复：本卷内无重复表达式', () => {
@@ -366,9 +366,9 @@ describe('generator（3.3.1 出题引擎 R1~R6）', () => {
     assert.ok(posCount.result >= 1 && posCount.a + posCount.b >= 1, '空位位置应覆盖结果位与操作数位');
   });
 
-  test('R6 填空呈现：25 知识点 blank 模式 250 题全部可按空位判分', () => {
+  test('R6 填空呈现：26 知识点 blank 模式 260 题全部可按空位判分', () => {
     const n = eachPaper(10, 'blank', 'mixed');
-    assert.equal(n, 250);
+    assert.equal(n, 260);
     // 每道题再独立复判一次（eachPaper 只查范围，这里查判分闭环）
     let judged = 0;
     for (const kp of KPS) {
@@ -378,7 +378,7 @@ describe('generator（3.3.1 出题引擎 R1~R6）', () => {
         judged++;
       }
     }
-    assert.equal(judged, 250);
+    assert.equal(judged, 260);
   });
 
   test('参数校验：错误统一返回 {ok:false, message}（2.4 约定第 4 条）', () => {
@@ -390,8 +390,8 @@ describe('generator（3.3.1 出题引擎 R1~R6）', () => {
     assert.equal(generate({ kpId: 'g1a-add-carry-20', semester: '一下' }).ok, false);
   });
 
-  test('listKnowledgePoints：全量 25 个 + 按学期过滤', () => {
-    assert.equal(listKnowledgePoints().length, 25);
+  test('listKnowledgePoints：全量 26 个 + 按学期过滤', () => {
+    assert.equal(listKnowledgePoints().length, 26);
     const g1a = listKnowledgePoints('一上');
     assert.deepEqual(g1a.map((k) => k.id).sort(), ['g1a-add-carry-20', 'g1a-add-sub-10', 'g1a-clock-order', 'g1a-picture-calc']);
     assert.ok(listKnowledgePoints().every((k) => k.id && k.name && k.semester && k.op && k.basicRules && k.advanceRules), '知识点配置字段完整');
