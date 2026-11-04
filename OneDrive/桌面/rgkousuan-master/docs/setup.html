@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>口算天天练 · 出题设置</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/iconify-icon/2.3.0/iconify-icon.min.js"></script>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#F3EADF;color:#4B3B32;}
+  .scroll-hide{scrollbar-width:none;}
+  .scroll-hide::-webkit-scrollbar{display:none;}
+  .card{background:#fff;border-radius:22px;border:1px solid #F6EADC;box-shadow:0 6px 18px rgba(139,112,86,.06);}
+  .kp.on{border-color:#E9824C;background:#FFF7EF;box-shadow:0 4px 12px rgba(233,130,76,.14);}
+  .kp.on .kp-ic{background:#E9824C;color:#fff;}
+  .kp.on .kp-check{opacity:1;}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:8px;border-radius:99px;background:#F3E6D8;outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;border:4px solid #E9824C;box-shadow:0 2px 6px rgba(0,0,0,.15);cursor:pointer;}
+</style>
+</head>
+<body class="w-full h-full m-0 overflow-hidden flex items-center justify-center">
+<div class="w-full h-full max-w-[393px] max-h-[852px] bg-[#FBF6EE] flex flex-col overflow-hidden relative shadow-2xl">
+<header class="shrink-0 bg-white px-5 pt-4 pb-3 border-b border-[#F4E8DA]">
+<div class="flex items-center justify-between">
+<a class="w-9 h-9 rounded-full bg-[#FBF6EE] flex items-center justify-center text-[#8B7565]" href="home.html">
+<iconify-icon icon="ph:caret-left-bold"></iconify-icon>
+</a>
+<h1 class="text-[16px] font-extrabold">出题设置</h1>
+<a class="text-[12px] font-semibold text-[#C97B49]" href="report.html">历史记录</a>
+</div>
+</header>
+<main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-hide px-5 pt-4 pb-40">
+<!-- 当前孩子 -->
+<div class="flex items-center gap-2.5 mb-4">
+<div class="w-8 h-8 rounded-xl bg-[#FBE0CB] flex items-center justify-center">🐣</div>
+<p class="text-[12px] text-[#8B7565]">当前档案：<span class="font-bold text-[#4B3B32]">小满</span> · 二年级上</p>
+<a class="ml-auto text-[11px] text-[#C97B49]" href="parent.html">切换</a>
+</div>
+<!-- 学期 -->
+<section class="mb-5">
+<div class="flex items-center justify-between mb-2.5">
+<h2 class="text-[14px] font-bold flex items-center gap-1.5">
+<span class="w-1.5 h-3.5 rounded-full bg-[#E9824C]"></span>选择学期
+        </h2>
+<span class="text-[11px] text-[#A99079]" id="termHint">二上 · 18 个知识点</span>
+</div>
+<div class="grid grid-cols-3 gap-2" id="termGrid"></div>
+</section>
+<!-- 知识点 -->
+<section class="mb-5">
+<div class="flex items-center justify-between mb-2.5">
+<h2 class="text-[14px] font-bold flex items-center gap-1.5">
+<span class="w-1.5 h-3.5 rounded-full bg-[#7BAE8B]"></span>知识点
+        </h2>
+<button class="text-[11px] text-[#C97B49]" onclick="selectAll()">全选 / 清空</button>
+</div>
+<p class="text-[11px] text-[#A99079] mb-2" id="kpCount">已选 3 个知识点</p>
+<div class="grid grid-cols-2 gap-2.5" id="kpGrid"></div>
+</section>
+<!-- 题量 -->
+<section class="card p-4 mb-3">
+<div class="flex items-center justify-between">
+<h2 class="text-[14px] font-bold flex items-center gap-1.5">
+<iconify-icon class="text-[#C97B49]" icon="ph:list-numbers-duotone"></iconify-icon>题量
+        </h2>
+<p class="text-[11px] text-[#A99079]">预计 <span id="estMin">8</span> 分钟</p>
+</div>
+<div class="mt-3 flex items-center gap-3">
+<span class="text-[11px] text-[#B6A190]">10</span>
+<input class="flex-1" id="amount" max="60" min="10" oninput="updateAmount()" step="5" type="range" value="30"/>
+<span class="text-[11px] text-[#B6A190]">60</span>
+</div>
+<div class="mt-3 flex items-center justify-center gap-1">
+<span class="text-[28px] font-extrabold text-[#E9824C] leading-none" id="amountVal">30</span>
+<span class="text-[13px] text-[#A99079] mb-0.5">道</span>
+<div class="ml-3 flex gap-1.5">
+<button class="px-2.5 py-1 rounded-full bg-[#FBF3E9] text-[11px] text-[#A9825F]" onclick="quickAmount(20)">20</button>
+<button class="px-2.5 py-1 rounded-full bg-[#FBF3E9] text-[11px] text-[#A9825F]" onclick="quickAmount(30)">30</button>
+<button class="px-2.5 py-1 rounded-full bg-[#FBF3E9] text-[11px] text-[#A9825F]" onclick="quickAmount(50)">50</button>
+</div>
+</div>
+</section>
+<!-- 难度 -->
+<section class="card p-4 mb-3">
+<h2 class="text-[14px] font-bold mb-3 flex items-center gap-1.5">
+<iconify-icon class="text-[#9A86C0]" icon="ph:gauge-duotone"></iconify-icon>难度模式
+      </h2>
+<div class="grid grid-cols-3 gap-2" id="diffRow"></div>
+<p class="mt-3 text-[11px] text-[#8B7565] bg-[#FBF7F1] rounded-xl px-3 py-2 leading-relaxed" id="diffDesc">数字温和，不涉及进退位混合，适合刚学完新知识点时巩固。</p>
+</section>
+<!-- 其他选项 -->
+<section class="card p-4 space-y-3">
+<label class="flex items-center justify-between">
+<div>
+<p class="text-[13px] font-semibold">语音读题</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">低年级可开启，减少阅读负担</p>
+</div>
+<span class="sw w-11 h-6 rounded-full bg-[#E9824C] relative transition cursor-pointer" onclick="toggleSwitch(this)">
+<span class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-white shadow transition"></span>
+</span>
+</label>
+<div class="h-px bg-[#F5EADF]"></div>
+<label class="flex items-center justify-between">
+<div>
+<p class="text-[13px] font-semibold">错题自动加入错题本</p>
+<p class="text-[10px] text-[#A99079] mt-0.5">练习结束后可一键重练</p>
+</div>
+<span class="sw w-11 h-6 rounded-full bg-[#E9824C] relative transition cursor-pointer" onclick="toggleSwitch(this)">
+<span class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-white shadow transition"></span>
+</span>
+</label>
+</section>
+</main>
+<!-- 底部按钮 -->
+<div class="absolute bottom-0 left-0 right-0 px-5 pt-3 pb-4 bg-gradient-to-t from-white via-white to-white/70">
+<div class="flex items-center justify-between mb-2 px-1">
+<p class="text-[11px] text-[#A99079]">共 <span class="font-bold text-[#4B3B32]" id="sumAmount">30</span> 题 · <span id="sumKp">3 个知识点</span></p>
+<p class="text-[11px] text-[#A99079]" id="sumDiff">标准模式</p>
+</div>
+<a class="h-14 w-full rounded-2xl bg-[#E9824C] text-white font-bold text-[16px] flex items-center justify-center gap-2 shadow-lg shadow-[#E9824C]/25 active:scale-[.98] transition" href="practice.html">
+<iconify-icon class="text-xl" icon="ph:play-circle-fill"></iconify-icon> 开始练习
+    </a>
+</div>
+</div>
+<script>
+  const terms = ['一上','一下','二上','二下','三上','三下'];
+  const kpData = {
+    '一上': ['10 以内加减法','20 以内进位加法','看图列式','认识钟表与顺序'],
+    '一下': ['20 以内退位减法','100 以内不进位加减','整十数加减法','简单应用题'],
+    '二上': ['100 以内进位加减','表内乘法（2-6）','表内乘法（7-9）','竖式计算入门','连加连减'],
+    '二下': ['有余数的除法','两位数加减法','混合运算（先乘后加）','长度单位换算'],
+    '三上': ['多位数乘一位数','三位数加减法','分数的简单认识','混合运算（带括号）'],
+    '三下': ['两位数乘两位数','除数是一位数的除法','四则混合运算','面积与周长口算']
+  };
+  const icons = {
+    plus:'ph:plus-minus', minus:'ph:math-operations', times:'ph:x', divide:'ph:divide',
+    clock:'ph:clock', book:'ph:book-open-text', ruler:'ph:ruler', list:'ph:list-checks'
+  };
+  const icCycle = ['ph:plus-minus','ph:math-operations','ph:x','ph:divide','ph:list-checks','ph:book-open-text','ph:ruler','ph:clock'];
+
+  let term = '二上';
+  let selected = ['100 以内进位加减','表内乘法（7-9）','混合运算（先乘后加）'];
+  let diff = '标准';
+
+  function renderTerms(){
+    const g = document.getElementById('termGrid');
+    g.innerHTML = terms.map(function(t){
+      const on = t === term;
+      return '<button onclick="pickTerm(\'' + t + '\')" class="h-11 rounded-xl text-[13px] font-semibold border transition ' +
+        (on ? 'bg-[#E9824C] border-[#E9824C] text-white shadow-sm' : 'bg-white border-[#F0E3D5] text-[#8B7565]') + '">' + t + '</button>';
+    }).join('');
+    document.getElementById('termHint').textContent = term + ' · ' + kpData[term].length + ' 个知识点';
+  }
+
+  function renderKp(){
+    const g = document.getElementById('kpGrid');
+    const list = kpData[term];
+    g.innerHTML = list.map(function(name, i){
+      const on = selected.indexOf(name) > -1;
+      return '<button onclick="toggleKp(\'' + name + '\')" class="kp ' + (on ? 'on' : '') + ' relative bg-white border border-[#F0E3D5] rounded-2xl p-3 text-left transition">' +
+        '<span class="kp-check absolute top-2 right-2 text-[#E9824C] text-xs" style="opacity:0"><iconify-icon icon="ph:check-circle-fill"></iconify-icon></span>' +
+        '<div class="kp-ic w-8 h-8 rounded-lg bg-[#FBF1E6] text-[#C98C5C] flex items-center justify-center mb-2">' +
+        '<iconify-icon icon="' + icCycle[i % icCycle.length] + '" class="text-base"></iconify-icon></div>' +
+        '<p class="text-[12px] font-semibold leading-snug pr-2">' + name + '</p>' +
+        '<p class="text-[10px] text-[#A99079] mt-1">' + (on ? '已选择' : '点击加入') + '</p>' +
+        '</button>';
+    }).join('');
+    document.getElementById('kpCount').textContent = '已选 ' + selected.length + ' 个知识点';
+    document.getElementById('sumKp').textContent = selected.length + ' 个知识点';
+  }
+
+  function pickTerm(t){
+    term = t;
+    selected = [];
+    renderTerms();
+    renderKp();
+    updateSummary();
+  }
+
+  function toggleKp(name){
+    const i = selected.indexOf(name);
+    if (i > -1) { selected.splice(i, 1); } else { selected.push(name); }
+    renderKp();
+    updateSummary();
+  }
+
+  function selectAll(){
+    selected = selected.length ? [] : kpData[term].slice();
+    renderKp();
+    updateSummary();
+  }
+
+  const diffs = [
+    {key:'简单', desc:'数字温和，不涉及进退位混合，适合刚学完新知识点时巩固。'},
+    {key:'标准', desc:'贴近课本常见题型，包含进位、退位与基础运算顺序，日常练习首选。'},
+    {key:'挑战', desc:'加入两步混合与干扰数字，限时更紧凑，适合冲刺与提升。'}
+  ];
+
+  function renderDiff(){
+    const g = document.getElementById('diffRow');
+    g.innerHTML = diffs.map(function(d){
+      const on = d.key === diff;
+      return '<button onclick="pickDiff(\'' + d.key + '\')" class="h-10 rounded-xl text-[13px] font-semibold border transition ' +
+        (on ? 'bg-[#FFF2E6] border-[#E9824C] text-[#D1793F]' : 'bg-white border-[#F0E3D5] text-[#8B7565]') + '">' + d.key + '</button>';
+    }).join('');
+    const cur = diffs.filter(function(d){ return d.key === diff; })[0];
+    document.getElementById('diffDesc').textContent = cur.desc;
+  }
+
+  function pickDiff(k){
+    diff = k;
+    renderDiff();
+    updateSummary();
+  }
+
+  function updateAmount(){
+    const v = document.getElementById('amount').value;
+    document.getElementById('amountVal').textContent = v;
+    document.getElementById('sumAmount').textContent = v;
+    document.getElementById('estMin').textContent = Math.max(3, Math.round(v * 0.26));
+  }
+
+  function quickAmount(v){
+    document.getElementById('amount').value = v;
+    updateAmount();
+  }
+
+  function updateSummary(){
+    document.getElementById('sumDiff').textContent = diff + '模式';
+    document.getElementById('sumKp').textContent = selected.length + ' 个知识点';
+  }
+
+  function toggleSwitch(el){
+    const on = el.dataset.on === '1';
+    el.dataset.on = on ? '0' : '1';
+    el.classList.toggle('bg-[#E9824C]', !on);
+    el.classList.toggle('bg-[#E3D6C8]', on);
+    el.firstElementChild.classList.toggle('right-0.5', !on);
+    el.firstElementChild.classList.toggle('left-0.5', on);
+  }
+
+  renderTerms();
+  renderKp();
+  renderDiff();
+  updateAmount();
+  updateSummary();
+</script>
+</body>
+</html>

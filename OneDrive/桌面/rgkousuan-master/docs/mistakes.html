@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>口算天天练 · 错题本</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/iconify-icon/2.3.0/iconify-icon.min.js"></script>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#F3EADF;color:#4B3B32;}
+  .scroll-hide{scrollbar-width:none;}
+  .scroll-hide::-webkit-scrollbar{display:none;}
+  .card{background:#fff;border-radius:22px;border:1px solid #F6EADC;box-shadow:0 6px 18px rgba(139,112,86,.06);}
+  .chip-btn{white-space:nowrap;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;transition:all .18s;}
+</style>
+</head>
+<body class="w-full h-full m-0 overflow-hidden flex items-center justify-center">
+<div class="w-full h-full max-w-[393px] max-h-[852px] bg-[#FBF6EE] flex flex-col overflow-hidden relative shadow-2xl">
+<header class="shrink-0 bg-white px-5 pt-4 pb-0">
+<div class="flex items-center justify-between">
+<a class="w-9 h-9 rounded-full bg-[#FBF6EE] flex items-center justify-center text-[#8B7565]" href="home.html">
+<iconify-icon icon="ph:caret-left-bold"></iconify-icon>
+</a>
+<div class="text-center">
+<h1 class="text-[16px] font-extrabold leading-tight">错题本</h1>
+<p class="text-[10px] text-[#B6A190]">小满 · 二年级上</p>
+</div>
+<button class="w-9 h-9 rounded-full bg-[#FBF6EE] flex items-center justify-center text-[#8B7565]" onclick="openSort()">
+<iconify-icon icon="ph:sort-ascending-bold"></iconify-icon>
+</button>
+</div>
+<!-- 概览 -->
+<div class="mt-3 flex gap-2">
+<div class="flex-1 rounded-2xl bg-[#FFF4E9] px-3 py-2">
+<p class="text-[17px] font-extrabold text-[#D1793F] leading-none">12 <span class="text-[10px] font-medium text-[#B08F76]">道</span></p>
+<p class="text-[10px] text-[#A99079] mt-1">待重练</p>
+</div>
+<div class="flex-1 rounded-2xl bg-[#F2F7F2] px-3 py-2">
+<p class="text-[17px] font-extrabold text-[#6A9A79] leading-none">48 <span class="text-[10px] font-medium text-[#8AA895]">道</span></p>
+<p class="text-[10px] text-[#7D9A87] mt-1">已订正</p>
+</div>
+<div class="flex-1 rounded-2xl bg-[#F8F5FB] px-3 py-2">
+<p class="text-[17px] font-extrabold text-[#8E7BB3] leading-none">2 <span class="text-[10px] font-medium text-[#A79BBF]">个</span></p>
+<p class="text-[10px] text-[#9A8DB0] mt-1">薄弱知识点</p>
+</div>
+</div>
+<!-- 时间筛选 -->
+<div class="mt-3 flex items-center gap-2">
+<span class="text-[11px] text-[#B6A190] shrink-0">时间</span>
+<div class="flex gap-1.5 overflow-x-auto scroll-hide">
+<button class="chip-btn bg-[#E9824C] text-white" data-time="全部" onclick="setTime(this)">全部</button>
+<button class="chip-btn bg-[#FBF3E9] text-[#8B7565]" data-time="今天" onclick="setTime(this)">今天</button>
+<button class="chip-btn bg-[#FBF3E9] text-[#8B7565]" data-time="本周" onclick="setTime(this)">本周</button>
+<button class="chip-btn bg-[#FBF3E9] text-[#8B7565]" data-time="本月" onclick="setTime(this)">本月</button>
+</div>
+</div>
+</header>
+<main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-hide px-5 pt-3 pb-24">
+<!-- 知识点筛选 -->
+<div class="flex items-center gap-2 mb-3">
+<span class="text-[11px] text-[#B6A190] shrink-0">知识点</span>
+<div class="flex gap-1.5 overflow-x-auto scroll-hide pb-0.5">
+<button class="chip-btn bg-[#4B3B32] text-white" data-kp="全部" onclick="setKp(this)">全部</button>
+<button class="chip-btn bg-white border border-[#F0E3D5] text-[#8B7565]" data-kp="表内乘法" onclick="setKp(this)">表内乘法</button>
+<button class="chip-btn bg-white border border-[#F0E3D5] text-[#8B7565]" data-kp="退位减法" onclick="setKp(this)">退位减法</button>
+<button class="chip-btn bg-white border border-[#F0E3D5] text-[#8B7565]" data-kp="混合运算" onclick="setKp(this)">混合运算</button>
+<button class="chip-btn bg-white border border-[#F0E3D5] text-[#8B7565]" data-kp="除法" onclick="setKp(this)">除法</button>
+</div>
+</div>
+<div class="flex items-center justify-between mb-2.5">
+<p class="text-[11px] text-[#A99079]" id="listTip">共 <span class="font-bold text-[#4B3B32]">12</span> 道错题 · 按错误次数排序</p>
+</div>
+<!-- 错题列表 -->
+<div class="space-y-2.5" id="list"></div>
+<!-- 全部重练 -->
+<div class="mt-4 mb-2">
+<a class="h-13 py-3.5 w-full rounded-2xl bg-[#FFF2E6] border border-[#F3D3B4] text-[#C97B49] text-[14px] font-bold flex items-center justify-center gap-1.5" href="practice.html">
+<iconify-icon class="text-lg" icon="ph:play-circle-fill"></iconify-icon> 一次重练这 12 道题
+      </a>
+<p class="text-center text-[10px] text-[#B6A190] mt-2">重练后答对 2 次，错题会自动移出错题本</p>
+</div>
+</main>
+<!-- 排序面板 -->
+<div class="hidden absolute inset-0 z-30 bg-black/30 items-end" id="sortPanel">
+<div class="w-full bg-white rounded-t-3xl p-5 pb-6">
+<div class="w-10 h-1 rounded-full bg-[#EDE2D6] mx-auto mb-4"></div>
+<h3 class="text-[14px] font-bold mb-3">排序方式</h3>
+<div class="space-y-1">
+<button class="sort-opt w-full flex items-center justify-between py-3 text-[13px] text-[#4B3B32]" onclick="chooseSort('错误次数最多', this)">
+          错误次数最多 <iconify-icon class="text-[#E9824C]" icon="ph:check-bold"></iconify-icon>
+</button>
+<button class="sort-opt w-full flex items-center justify-between py-3 text-[13px] text-[#4B3B32]" onclick="chooseSort('最近出错', this)">
+          最近出错 <iconify-icon class="text-transparent" icon="ph:check-bold"></iconify-icon>
+</button>
+<button class="sort-opt w-full flex items-center justify-between py-3 text-[13px] text-[#4B3B32]" onclick="chooseSort('按知识点分组', this)">
+          按知识点分组 <iconify-icon class="text-transparent" icon="ph:check-bold"></iconify-icon>
+</button>
+</div>
+<button class="mt-3 w-full h-11 rounded-xl bg-[#FBF3E9] text-[13px] font-semibold text-[#8B7565]" onclick="closeSort()">取消</button>
+</div>
+</div>
+<!-- 底部导航 -->
+<nav class="shrink-0 bg-white/95 border-t border-[#F1E5D8] px-2 pt-1.5 pb-3">
+<div class="flex items-center justify-around">
+<a class="flex flex-col items-center gap-0.5 w-16 py-1 text-[#B6A190]" href="home.html">
+<iconify-icon class="text-[22px]" icon="ph:house-fill"></iconify-icon>
+<span class="text-[10px]">首页</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 w-16 py-1 text-[#B6A190]" href="setup.html">
+<iconify-icon class="text-[22px]" icon="ph:pencil-simple-line-fill"></iconify-icon>
+<span class="text-[10px]">出题</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 w-16 py-1 text-[#E9824C]" href="mistakes.html">
+<iconify-icon class="text-[22px]" icon="ph:notebook-fill"></iconify-icon>
+<span class="text-[10px] font-bold">错题本</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 w-16 py-1 text-[#B6A190]" href="report.html">
+<iconify-icon class="text-[22px]" icon="ph:chart-bar-fill"></iconify-icon>
+<span class="text-[10px]">报告</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 w-16 py-1 text-[#B6A190]" href="parent.html">
+<iconify-icon class="text-[22px]" icon="ph:user-circle-fill"></iconify-icon>
+<span class="text-[10px]">我的</span>
+</a>
+</div>
+</nav>
+</div>
+<script>
+  const items = [
+    {q:'8 × 7 = 54', ans:56, kp:'表内乘法', tag:'表内乘法（7-9）', count:3, date:'今天 09:12', from:'今日练习', hot:true},
+    {q:'6 × 4 + 9 = 54', ans:33, kp:'混合运算', tag:'混合运算（先乘后加）', count:2, date:'今天 09:10', from:'今日练习', hot:true},
+    {q:'45 − 28 = 27', ans:17, kp:'退位减法', tag:'100 以内退位减法', count:3, date:'今天 09:08', from:'今日练习', hot:true},
+    {q:'63 ÷ 7 = 8', ans:9, kp:'除法', tag:'表内除法', count:2, date:'昨天 19:40', from:'错题重练', hot:false},
+    {q:'34 + 47 = 71', ans:81, kp:'混合运算', tag:'100 以内进位加减', count:2, date:'昨天 19:36', from:'错题重练', hot:false},
+    {q:'9 × 6 − 8 = 62', ans:46, kp:'混合运算', tag:'混合运算（先乘后加）', count:1, date:'10 月 31 日', from:'课后巩固', hot:false},
+    {q:'72 − 45 = 37', ans:27, kp:'退位减法', tag:'100 以内退位减法', count:1, date:'10 月 30 日', from:'课后巩固', hot:false},
+    {q:'7 × 7 = 47', ans:49, kp:'表内乘法', tag:'表内乘法（7-9）', count:2, date:'10 月 29 日', from:'周末挑战', hot:false}
+  ];
+
+  const kpColor = {
+    '表内乘法':'bg-[#FDF0E4] text-[#C98C5C]',
+    '退位减法':'bg-[#F3F7FA] text-[#6C93A8]',
+    '混合运算':'bg-[#F5F1FB] text-[#8E7BB3]',
+    '除法':'bg-[#F1F7F1] text-[#6A9A79]'
+  };
+
+  let filterKp = '全部';
+  let filterTime = '全部';
+  let sortMode = '错误次数最多';
+
+  function render(){
+    let data = items.slice();
+    if (filterKp !== '全部') {
+      data = data.filter(function(it){
+        if (filterKp === '表内乘法') return it.kp === '表内乘法';
+        if (filterKp === '退位减法') return it.kp === '退位减法';
+        if (filterKp === '混合运算') return it.kp === '混合运算';
+        if (filterKp === '除法') return it.kp === '除法';
+        return true;
+      });
+    }
+    if (filterTime === '今天') data = data.filter(function(it){ return it.date.indexOf('今天') === 0; });
+    if (filterTime === '本周') data = data.filter(function(it){ return it.date.indexOf('今天') === 0 || it.date.indexOf('昨天') === 0 || it.date === '10 月 31 日'; });
+    if (filterTime === '本月') data = data.slice();
+
+    if (sortMode === '最近出错') {
+      data.sort(function(a, b){ return items.indexOf(a) - items.indexOf(b); });
+    } else {
+      data.sort(function(a, b){ return b.count - a.count; });
+    }
+
+    const list = document.getElementById('list');
+    if (!data.length) {
+      list.innerHTML = '<div class="card p-8 text-center">' +
+        '<p class="text-[38px]">🎉</p>' +
+        '<p class="text-[14px] font-bold mt-2">这个范围内没有错题</p>' +
+        '<p class="text-[11px] text-[#A99079] mt-1">真棒！换个筛选条件看看其它记录吧</p>' +
+        '<button onclick="resetFilter()" class="mt-3 px-4 h-9 rounded-full bg-[#FBF1E6] text-[11px] font-semibold text-[#C97B49]">重置筛选</button>' +
+        '</div>';
+    } else {
+      list.innerHTML = data.map(function(it){
+        return '<div class="card p-3.5">' +
+          '<div class="flex items-start justify-between">' +
+            '<div class="flex items-center gap-2">' +
+              '<span class="chip ' + (kpColor[it.kp] || 'bg-[#F5F1EC] text-[#8B7565]') + '">' + it.tag + '</span>' +
+              (it.hot ? '<span class="chip bg-[#FDECEC] text-[#D4796A]">高频</span>' : '') +
+            '</div>' +
+            '<span class="text-[10px] text-[#B6A190]">' + it.date + '</span>' +
+          '</div>' +
+          '<div class="mt-2.5 flex items-end justify-between">' +
+            '<div>' +
+              '<p class="text-[22px] font-extrabold tracking-wide leading-tight">' + it.q.split(' = ')[0] + ' = <span class="text-[#D9826A]">' + it.q.split(' = ')[1] + '</span></p>' +
+              '<p class="text-[11px] text-[#7D9A87] mt-1 flex items-center gap-1">' +
+                '<iconify-icon icon="ph:check-circle-fill"></iconify-icon>正确答案 <span class="font-bold">' + it.ans + '</span>' +
+              '</p>' +
+            '</div>' +
+            '<button onclick="retry(this)" class="px-3.5 h-8 rounded-full bg-[#E9824C] text-white text-[11px] font-bold shrink-0">重练</button>' +
+          '</div>' +
+          '<div class="mt-2.5 pt-2 border-t border-[#F7EEE3] flex items-center justify-between text-[10px] text-[#B6A190]">' +
+            '<span>来自「' + it.from + '」</span>' +
+            '<span>共错 ' + it.count + ' 次</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+    document.getElementById('listTip').innerHTML = '共 <span class="font-bold text-[#4B3B32]">' + data.length + '</span> 道错题 · 按' + sortMode + '排序';
+  }
+
+  function setTime(btn){
+    filterTime = btn.dataset.time;
+    document.querySelectorAll('[data-time]').forEach(function(el){
+      el.classList.toggle('bg-[#E9824C]', el === btn);
+      el.classList.toggle('text-white', el === btn);
+      el.classList.toggle('bg-[#FBF3E9]', el !== btn);
+      el.classList.toggle('text-[#8B7565]', el !== btn);
+    });
+    render();
+  }
+
+  function setKp(btn){
+    filterKp = btn.dataset.kp;
+    document.querySelectorAll('[data-kp]').forEach(function(el){
+      const on = el === btn;
+      el.classList.toggle('bg-[#4B3B32]', on);
+      el.classList.toggle('text-white', on);
+      el.classList.toggle('bg-white', !on);
+      el.classList.toggle('border', !on);
+      el.classList.toggle('border-[#F0E3D5]', !on);
+      el.classList.toggle('text-[#8B7565]', !on);
+    });
+    render();
+  }
+
+  function resetFilter(){
+    filterKp = '全部';
+    filterTime = '全部';
+    const allTime = document.querySelector('[data-time="全部"]');
+    const allKp = document.querySelector('[data-kp="全部"]');
+    setTime(allTime);
+    setKp(allKp);
+  }
+
+  function retry(btn){
+    btn.textContent = '已加入';
+    btn.classList.remove('bg-[#E9824C]');
+    btn.classList.add('bg-[#7BAE8B]');
+    setTimeout(function(){ window.location.href = 'practice.html'; }, 450);
+  }
+
+  function openSort(){
+    const p = document.getElementById('sortPanel');
+    p.classList.remove('hidden');
+    p.classList.add('flex');
+  }
+
+  function closeSort(){
+    const p = document.getElementById('sortPanel');
+    p.classList.add('hidden');
+    p.classList.remove('flex');
+  }
+
+  function chooseSort(mode, btn){
+    sortMode = mode;
+    document.querySelectorAll('.sort-opt').forEach(function(el){
+      const icon = el.querySelector('span[style], iconify-icon');
+      icon.setAttribute('class', 'text-transparent');
+      if (el === btn) icon.setAttribute('class', 'text-[#E9824C]');
+    });
+    closeSort();
+    render();
+  }
+
+  document.getElementById('sortPanel').addEventListener('click', function(e){
+    if (e.target === this) closeSort();
+  });
+
+  render();
+</script>
+</body>
+</html>
